@@ -4,12 +4,6 @@ on:
   issue_comment: { types: [created] }
   pull_request_review: { types: [submitted] }
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  actions: read
-
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -19,4 +13,4 @@ jobs:
       - name: Run Codeowners merge check
         uses: OSS-Docs-Tools/code-owner-self-merge@1.6.8
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
