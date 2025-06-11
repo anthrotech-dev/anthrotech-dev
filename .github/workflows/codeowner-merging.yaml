@@ -5,7 +5,7 @@ on:
   pull_request_review: { types: [submitted] }
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   issues: write
   actions: read
