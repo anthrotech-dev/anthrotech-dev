@@ -9,12 +9,12 @@
 [PR例](https://github.com/anthrotech-dev/anthrotech-dev/pull/1)を参考に編集します。
 
 作成(変更)するファイルは3つです。
-1. メンバーファイル `src/members/<あなたのID>/index.mdx`
-2. アセットファイル `src/assets/<あなたのID>/<アイコン画像ファイル名>`
+1. メンバーファイル `/src/members/<あなたのID>/index.mdx`
+2. アセットファイル `/public/assets/<あなたのID>/<アイコン画像ファイル名>`
 3. CODEOWNERSファイル
 
 ### メンバーファイル/アセットファイル
-`src/members`に自分のIDのフォルダを作成し、`src/members/your-id/index.mdx`に自分の情報を記載します。
+`src/members`に自分のIDのフォルダを作成し、`/src/members/your-id/index.mdx`に自分の情報を記載します。
 
 ```markdown
 ---
@@ -28,7 +28,7 @@ avatar: /assets/<ID>/<アイコン画像のファイル名>
 <専用ページで表示されるより詳細な自己紹介>
 ```
 
-アイコン画像などのアセットは`src/assets/<あなたのID>/`に配置します。
+アイコン画像などのアセットは`/public/assets/<あなたのID>/`に配置します。
 
 ### CODEOWNERSファイル
 あなたが今後自分のファイルを編集した際に、自分でマージできるようにするため、`CODEOWNERS`ファイルに追記します。
