@@ -7,11 +7,9 @@ on:
 
 jobs:
   assign-role:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,9 +21,11 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+        working-directory: ./scripts
 
       - name: Assign role via Discord bot
         run: python syncrole.py
+        working-directory: ./scripts
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           GUILD_ID: ${{ secrets.GUILD_ID }}
