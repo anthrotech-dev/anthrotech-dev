@@ -16,15 +16,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build with Astro
         id: build
         run: |
           set -o pipefail
-          npm run build 2>&1 | tee build.log
+          pnpm build 2>&1 | tee build.log
         continue-on-error: true
 
       - name: Post failure to PR
