@@ -2,6 +2,7 @@ from pathlib import Path
 import frontmatter
 import asyncio
 import discord
+import os
 
 TOKEN = os.environ["DISCORD_TOKEN"]
 GUILD_ID = int(os.environ["GUILD_ID"])
