@@ -36,10 +36,9 @@ jobs:
         run: |
           set -o pipefail
           pnpm build 2>&1 | tee build.log
-        continue-on-error: true
 
       - name: Post failure to PR
-        if: steps.build.outcome == 'failure'
+        if: steps.build.outcome == 'failure' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
