@@ -1,0 +1,51 @@
+name: Build Astro
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Astro Build Check
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Astro
+        id: build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+        continue-on-error: true
+
+      - name: Post failure to PR
+        if: steps.build.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('build.log', 'utf8');
+            const truncated = log.length > 6500 ? log.slice(-6500) : log;
+            const comment = [
+              '🚨 **Astro build failed**',
+              '',
+              '```',
+              truncated,
+              '```'
+            ].join('\n');
+            
+            github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
