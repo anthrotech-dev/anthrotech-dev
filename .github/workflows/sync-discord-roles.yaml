@@ -1,13 +1,13 @@
 name: Sync Discord Roles
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - main
   workflow_dispatch: {}
 
 jobs:
-  assign-role:
-    if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
+  sync-role:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
         run: pip install -r requirements.txt
         working-directory: ./scripts
 
-      - name: Assign role via Discord bot
+      - name: Sync role via Discord bot
         run: python syncrole.py
         working-directory: ./scripts
         env:
