@@ -1,9 +1,9 @@
-name: Sync Github Members
+name: Sync GitHub Members
 
 on:
-# push:
-#   branches:
-#     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       apply:
