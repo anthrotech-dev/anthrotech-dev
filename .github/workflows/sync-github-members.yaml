@@ -1,0 +1,47 @@
+name: Sync Github Members
+
+on:
+# push:
+#   branches:
+#     - main
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Apply changes?'
+        required: true
+        default: 'false'
+        type: boolean
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.AWS_ARN }}
+          aws-region: ap-northeast-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.apply == 'true' || github.event_name == 'push' }}
+        run: terraform apply -auto-approve
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
