@@ -14,17 +14,28 @@ export async function getStaticPaths() {
 }
 
 const encodedslug = Astro.params.slug;
-let slug = encodedslug.startsWith('@') ? encodedslug.slice(1) : encodedslug;
-if (!slug.includes('/')) {
-    slug += '/index';
-}
-const memberPath = `../members/${slug}.mdx`;
-const memberModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[memberPath];
-if (!memberModule) {
-  throw new AstroError(`Member not found: ${slug}`);
+let pageSlug = encodedslug.startsWith('@') ? encodedslug.slice(1) : encodedslug;
+const memberSlug = pageSlug.split('/')[0] + "/index";
+
+if (!pageSlug.includes('/')) {
+    pageSlug += "/index";
 }
 
-const { frontmatter, Content } = memberModule;
+const memberPath = `../members/${memberSlug}.mdx`;
+const pagePath = `../members/${pageSlug}.mdx`;
+
+const memberModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[memberPath];
+if (!memberModule) {
+  throw new AstroError(`Member not found: ${memberSlug}`);
+}
+
+const pageModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[pagePath];
+if (!pageModule) {
+  throw new AstroError(`Member not found: ${pageSlug}`);
+}
+
+const frontmatter = memberModule.frontmatter
+const Content = pageModule.Content
 
 ---
 <Layout
