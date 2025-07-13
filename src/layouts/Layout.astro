@@ -1,5 +1,4 @@
 ---
-import logo from '../assets/astrotech.png';
 const { title } = Astro.props
 
 let pageTitle = 'Anthrotech'
@@ -13,7 +12,7 @@ if (title) {
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/png" href={logo.src} />
+        <link rel="icon" type="image/png" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
         <title>{pageTitle}</title>
 	</head>
