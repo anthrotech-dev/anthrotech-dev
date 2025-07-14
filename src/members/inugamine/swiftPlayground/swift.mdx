@@ -175,7 +175,9 @@ ingredients.insert(🍎, at: 1) // インデックス 1 に追加する
 // [1] にリンゴが追加され、後の要素のインデックス番号が変わる
 ```
 
-配列の各要素に同じ操作を実行でき、これを反復処理という。
+配列の各要素に for-in 構文を用いて同じ操作を実行できる。これを反復処理という。
 ```swift
-
+for tempCoordinate in ingredients {
+    tempCoordinate.append(ingredients)
+}
 ```
