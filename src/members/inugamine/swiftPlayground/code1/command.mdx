@@ -87,6 +87,173 @@ move(distance: 2)
   キャラクターに左を向かせるためのコマンドです。今回の核となるコマンドですね。  
   このコマンドを組み合わせることにより、前進しかできなかったキャラクターに方向転換を行わせることができるようになりました。
 
-このコードの後のコマンドも、前セクションとほぼ同じなので割愛します。
+このコードの後のコマンドも、前セクションとほぼ同じなので解説は割愛します。
+
+---
+
+##  スイッチを切り替える
+```
+目標: 宝石を集めたら、スイッチを切り替えましょう。
+```
+回答コード例↓
+``` swift
+func move(distance: Int) {
+    for i in 1 ... distance {
+        moveForward()
+    }
+}
+
+move(distance: 2)
+turnLeft()
+moveForward()
+collectGem()
+moveForward()
+turnLeft()
+move(distance: 2)
+toggleSwitch()
+```
+
+### ◇何をやってるの？  
+1. 前セクションと同じで、`move()` という**関数**を作り、distance パラメータに 2 を渡して前に 2 歩前進させます。
+2. `collectGem()` や `turnLeft()` など基本的なコマンドでマップ内を移動しています。
+3. `toggleSwitch()` という新しいコマンドで、地面のスイッチをトグっています。
+
+
+`toggleSwitch()`という Swift Playground 用のコマンドが登場しただけなので、コードの解説は割愛します。
+
+---
+
+##  ワープの練習
+```
+目標: 抜け穴を使って、宝石を集めましょう。
+```
+回答コード例↓
+``` swift
+func move(distance: Int) {
+    for i in 1 ... distance {
+        moveForward()
+    }
+}
+
+move(distance: 3)
+turnLeft()
+move(distance: 2)
+toggleSwitch()
+move(distance: 2)
+turnLeft()
+move(distance: 2)
+collectGem()
+```
+
+### ◇何をやってるの？  
+1. 前セクションと同じで、`move()` という**関数**を作り、前に 2 〜 3 歩前進させます。
+2. `collectGem()` や `turnLeft()` など基本的なコマンドでマップ内を移動しています。
+3. フィールドに設置されたワープ装置で離れた場所に移動しながらジェムを集めます。
+
+このコードも、全体的には特別なことはしていないので、コードの詳しい解説は割愛します。
+
+---
+
+##  バグを見つけて直す
+```
+目標: バグを見つけて、直しましょう。
+```
+修正前のコード↓
+```swift
+// 修正前
+moveForward()
+turnLeft()
+moveForward()
+moveForward()
+collectGem()
+moveForward()
+toggleSwitch()
+```
+回答コード例↓
+``` swift
+// 修正後
+moveForward()
+moveForward() // turnLeft() と入れ替え
+turnLeft()   // moveForward() と入れ替え
+moveForward()
+collectGem()
+moveForward()
+toggleSwitch()
+```
+
+### ◇何をやってるの？  
+1. 上から二行目の `turnLeft()` と三行目の `moveForward()` を入れ替えました。
+
+このコードも、全体的には特別なことはしていないので、コードの詳しい解説は割愛します。
+
+---
+
+##  バグつぶしの練習
+```
+目標: コマンドを並べ替えて、コードをデバッグしましょう。
+```
+修正前のコード↓
+```swift
+// 修正前
+moveForward()
+moveForward()
+moveForward()
+turnLeft()
+toggleSwitch()
+moveForward()
+moveForward()
+moveForward()
+collectGem()
+moveForward()
+```
+
+回答コード例↓
+``` swift
+// 修正後
+moveForward()
+turnLeft() // moveForward() と入れ替え
+moveForward()
+moveForward()　// turnYeft() と入れ替え
+toggleSwitch()
+moveForward()
+moveForward()
+moveForward()
+moveForward() // collectGem() と入れ替え
+collectGem() // moveForward() と入れ替え
+```
+
+### ◇何をやってるの？  
+1. 上から二行目の `moveForward()` と 四行目の `turnLeft()` を入れ替えました。
+2. 一番下の `collectGem()` と、下から二行目の `moveForward()` を入れ替えました。
+
+このコードも、全体的には特別なことはしていないので、コードの詳しい解説は割愛します。
+
+---
+
+##  最短の道順
+```
+目標: さまざまな方法を考えて、最短の道順を選びましょう。
+```
+回答コード例↓
+``` swift
+func move(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+move(steps: 3)
+collectGem()
+move(steps: 4)
+toggleSwitch()
+```
+
+### ◇何をやってるの？  
+1. マップ全体のギミックを見渡したところ、ワープ装置を使うと、前に進むだけでよさそうということが分かりました。
+2. `func` キーワードを使って、いつものように `move()` 関数を定義しました。
+3. `collectGem()` と `toggleSwitch()` も使ってマップ上の宝石とスイッチを攻略しました。
+
+ワープ装置を使うと全体で 7 歩でクリアできますだ、左に曲がりながら移動すると 10 歩、歩くことになります。今回はらいたんの経路を通ってクリアするのが目標のため、ワープ装置を使いました。
+このコードも、全体的には特別なことはしていないので、コードの詳しい解説は割愛します。
 
 ---
