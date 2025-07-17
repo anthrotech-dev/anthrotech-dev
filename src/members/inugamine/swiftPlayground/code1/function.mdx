@@ -1,0 +1,304 @@
+# 関数
+##  新しい挙動を作る
+```
+目標: コンポジションを使って、右に曲がりましょう。
+```
+回答コード例↓
+``` swift
+func move(steps: Int){
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+move(steps: 3)
+
+// ここがコンポジションのポイント
+turnLeft()
+turnLeft()
+turnLeft()
+
+move(steps: 3)
+collectGem()
+```
+
+### ◇何をやってるの？  
+1. a
+2. 左を向く `turnLeft()` を3回実行して、右を向かせています。
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  a
+
+---
+
+##  新しい関数を作る
+```
+目標: 右に曲がるための関数を定義して、使ってみましょう。
+```
+回答コード例↓
+``` swift
+func turnRight() {
+    for i in 1...3 {
+        turnLeft()
+    }
+}
+
+moveForward()
+turnLeft()
+moveForward()
+turnRight()
+moveForward()
+turnRight()
+moveForward()
+turnRight()
+moveForward()
+turnLeft()
+moveForward()
+toggleSwitch()
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  a
+
+---
+
+##  集めて、切り替えて、繰り返す
+```
+目標: 繰り返しのパターンをまとめた関数を定義しましょう。
+```
+回答コード例↓
+``` swift
+func collectYtoggle {
+    moveForward()
+    collectGem()
+    moveForward()
+    toggleSwitch()
+    moveForward()
+}
+
+collectYtoggle()
+turnLeft()
+collectYtoggle()
+moveForward()
+turnLeft()
+collectYtoggle()
+turnLeft()
+collectYtoggle()
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  「前に進む、宝石を取る、前に進む、スイッチをトグる、前に進む」をひとつのパターンとして、`collectYtoggle()` という関数を定義しました。また、and と書くのがなんとなく面倒だったので、and の意味を持つスペイン語である y を使っています。コーディング上の意味はありません。
+
+---
+
+##  往復する
+```
+目標: 繰り返しのパターンを見つけて、関数を定義しましょう。
+```
+回答コード例↓
+``` swift
+func collectGem() {
+    for i in 1...3 {
+        collectGem()
+        moveForward()
+    }
+}
+
+collectGems()
+turnRight()
+moveForward()
+turnRight()
+collectGems()
+turnLeft()
+moveForward()
+turnLeft()
+collectGems()
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  a
+
+---
+
+##  パターンをネストする
+```
+目標: 関数を他の関数から呼び出してみましょう
+```
+回答コード例↓
+``` swift
+func turnAround() {
+    turnLeft()
+    turnLeft()
+}
+
+func solveStair() {
+    turnAround()
+    moveForward()
+}
+
+func getGems() {
+    moveForward
+    collectGem()
+    solveStair()
+}
+
+for i in 1...4 {
+    getGems()
+    turnLeft()
+}
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+```swift
+func turnAround() {
+    turnLeft()
+    turnLeft()
+}
+```
+後ろを向くための関数 `turnAround()` を定義しました。中身は `turnLeft()` を 2 回実行しています。既にある機能を組み合わせて新たな機能を実現することを**コンポジション**と言うのでしたね。ちなみに `turnRight()` を 2 回実行するでももちろん OK です。
+
+
+`solveStair()` には、先ほど作成した `turnAround()` と `moveForward()` を入れ、宝石を回収した後に「階段を降りる」という機能を持たせました。
+
+---
+
+##  並んだ階段
+```
+目標: ステージのクリア方法を複数の関数に分解しましょう。
+```
+回答コード例↓
+``` swift
+func collectGemTurnAround() {
+    moveForward()
+    moveForward()
+    collectGem()
+    turnLeft()
+    turnLeft()
+    moveForward()
+    moveForward()
+}
+
+func solveRow() {
+    collectGemTurnAround()
+    collectGemTurnAround()
+    turnRight()
+    moveForward()
+    turnLeft()
+}
+
+for i in 1...3 {
+    solveRow()
+}
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  a
+
+---
+
+##  template
+```
+目標: 
+```
+回答コード例↓
+``` swift
+
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  a
+
+---
+
+##  パターンを探す
+```
+目標: パターンを分解して、関数を作りましょう。
+```
+回答コード例↓
+``` swift
+func moveThenToggle(){
+    for i in 1...2{
+        moveForward()
+    }
+    toggleSwitch()
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+
+func move(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+func moreSteps() {
+    for i in 1 ... 2 {
+        move(steps: 2)
+    }
+}
+
+for i in 1...2 {
+    moveThenToggle()
+    turnAround()
+    move(steps: 2)
+    turnLeft()
+    for i in 1...2{
+        moveThenToggle()
+    }
+    turnAround()
+    moreSteps()
+    turnLeft()
+}
+```
+
+### ◇何をやってるの？  
+1. a
+2. b
+3. c
+
+### ◇コードを詳しく見てみよう！
+- ### `code`
+  a
+
+---
