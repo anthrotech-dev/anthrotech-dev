@@ -35,19 +35,25 @@ if (!pageModule) {
   throw new AstroError(`Member not found: ${pageSlug}`);
 }
 
-const frontmatter = memberModule.frontmatter
+const memberFM = memberModule.frontmatter
+const pageFM = pageModule.frontmatter;
 const Content = pageModule.Content
+
+let title = '@' + memberFM.id;
+if (pageFM.title) {
+    title = pageFM.title + "(@" + memberFM.id + ")";
+}
 
 ---
 <Layout
-    title={'@' + frontmatter.id}
+    title={title}
 >
 
     <div
         class="member-header"
     >
-        <img src={frontmatter.avatar} alt={`${frontmatter.name}'s avatar`} class="avatar" />
-        <h1>{frontmatter.name}</h1>
+        <img src={memberFM.avatar} alt={`${memberFM.name}'s avatar`} class="avatar" />
+        <h1>{memberFM.name}</h1>
     </div>
 
     <article>
