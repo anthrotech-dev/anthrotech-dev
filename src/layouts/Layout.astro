@@ -1,5 +1,5 @@
 ---
-const { title, description, image } = Astro.props
+const { title, description, image, cardType } = Astro.props
 
 let pageTitle = 'Anthrotech'
 if (title) {
@@ -26,7 +26,7 @@ const defaultDescription = 'Anthrotechは、ケモノ好き x 技術好き な�
         <meta property="og:type" content="website" />
         <meta property="og:url" content={Astro.url.href} />
         <meta property="og:image" content={image || '/favicon.svg'} />
-        <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+        <meta name="twitter:card" content={cardType ?? (image ? 'summary_large_image' : 'summary')} />
 	</head>
 	<body>
         <div id="wrap">
