@@ -19,12 +19,12 @@ const memberSlug = pageSlug.split('/')[0] + "/index";
 
 const memberPath = `../members/${memberSlug}.mdx`;
 
-const memberModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[memberPath];
+const allPages = import.meta.glob('../members/**/*.mdx', { eager: true });
+
+const memberModule: any = allPages[memberPath];
 if (!memberModule) {
   throw new AstroError(`Member not found: ${memberSlug}`);
 }
-
-const allPages = import.meta.glob('../members/**/*.mdx', { eager: true });
 
 let pagePath = `../members/${pageSlug}.mdx`;
 let pageModule: any = allPages[pagePath];
@@ -49,6 +49,8 @@ if (pageFM.title) {
 ---
 <Layout
     title={title}
+    description={pageFM.description}
+    image={pageFM.image || memberFM.avatar}
 >
 
     <div
