@@ -72,6 +72,7 @@ pre {
     padding: 0.5em;
     border-radius: 0.3em;
     margin: 0.5em 0;
+    overflow-x: auto;
 }
 
 
@@ -99,6 +100,7 @@ body {
     padding: 0 20px;
     flex: 1;
     justify-content: center;
+    overflow-x: hidden;
 }
 
 #sidebar {
@@ -131,6 +133,9 @@ body {
 @media (max-width: 800px) {
     #sidebar {
         display: none;
+    }
+    #wrap {
+        padding: 0 10px;
     }
 }
 
