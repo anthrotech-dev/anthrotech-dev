@@ -17,19 +17,20 @@ const encodedslug = Astro.params.slug;
 let pageSlug = encodedslug.startsWith('@') ? encodedslug.slice(1) : encodedslug;
 const memberSlug = pageSlug.split('/')[0] + "/index";
 
-if (!pageSlug.includes('/')) {
-    pageSlug += "/index";
-}
-
 const memberPath = `../members/${memberSlug}.mdx`;
-const pagePath = `../members/${pageSlug}.mdx`;
 
 const memberModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[memberPath];
 if (!memberModule) {
   throw new AstroError(`Member not found: ${memberSlug}`);
 }
 
-const pageModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[pagePath];
+let pagePath = `../members/${pageSlug}.mdx`;
+let pageModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[pagePath];
+if (!pageModule) {
+    let pagePath = `../members/${pageSlug}/index.mdx`;
+    pageModule = import.meta.glob('../members/**/*.mdx', { eager: true })[pagePath];
+}
+
 if (!pageModule) {
   throw new AstroError(`Member not found: ${pageSlug}`);
 }
