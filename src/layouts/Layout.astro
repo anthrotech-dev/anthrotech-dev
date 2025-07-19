@@ -22,6 +22,10 @@ import FileTree from '../components/FileTree.astro'
         <div id="wrap">
             {Astro.url.pathname != "/" &&
             <div id="sidebar">
+                <a id="header" href="/">
+                    <img id="logo" src="/favicon.svg" alt="Anthrotech Logo" />
+                    <span id="title">Anthrotech</span>
+                </a>
                 <FileTree />
             </div>
             }
@@ -37,6 +41,7 @@ import FileTree from '../components/FileTree.astro'
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    color: #333;
 }
 
 ul,ol {
@@ -97,10 +102,31 @@ body {
 }
 
 #sidebar {
-    margin-top: 140px;
     width: 200px;
     overflow-y: auto;
 }
+
+#header {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 5px;
+    text-decoration: none;
+}
+
+#logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+}
+
+#title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
 
 @media (max-width: 800px) {
     #sidebar {
