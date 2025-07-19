@@ -24,11 +24,13 @@ if (!memberModule) {
   throw new AstroError(`Member not found: ${memberSlug}`);
 }
 
+const allPages = import.meta.glob('../members/**/*.mdx', { eager: true });
+
 let pagePath = `../members/${pageSlug}.mdx`;
-let pageModule: any = import.meta.glob('../members/**/*.mdx', { eager: true })[pagePath];
+let pageModule: any = allPages[pagePath];
 if (!pageModule) {
-    let pagePath = `../members/${pageSlug}/index.mdx`;
-    pageModule = import.meta.glob('../members/**/*.mdx', { eager: true })[pagePath];
+    pagePath = `../members/${pageSlug}/index.mdx`;
+    pageModule = allPages[pagePath];
 }
 
 if (!pageModule) {

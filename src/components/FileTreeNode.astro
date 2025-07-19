@@ -1,0 +1,84 @@
+---
+const { path } = Astro.props;
+
+const allPages = import.meta.glob('../**/*.mdx', { eager: true });
+
+const childPageRegix = new RegExp(`^${path.replace(/\//g, '\\/')}/?[^/]+\.mdx$`)
+const childPages = Object.entries(allPages).filter(([file]) => file.match(childPageRegix));
+
+const childDirs = [...new Set(Object.entries(allPages).filter(([file]) => file.startsWith(path) && file.slice(path.length+1).split('/').length === 2).map(([file]) => file.split('/').slice(0, -1).join('/')))]
+
+const pathToSlug = (path: string) => {
+    if (path.startsWith('../')) path = path.slice(3)
+    if (path.startsWith("members")) path = '@' + path.slice(8)
+    if (path.endsWith('/index.mdx')) path = path.slice(0, -10)
+    if (path.endsWith('.mdx')) path = path.slice(0, -4)
+    return '/' + path
+}
+
+---
+
+<ul>
+{childPages.map(([path, module]: any) => {
+    const slug = pathToSlug(path);
+    const isActive = slug.slice(1) === Astro.url.pathname.slice(1);
+    return (
+        <li class=`file ${isActive ? 'active' : ''}`>
+            <a href={slug}>{module.frontmatter.title ?? '@' + module.frontmatter.id}</a>
+        </li>
+    );
+})}
+{childDirs.map(path => {
+
+    const page = allPages[`${path}/index.mdx`]
+    const name = path.split('/').slice(-1)[0];
+
+    return (
+        <li class="folder">
+            { page ? <a href={pathToSlug(path)}>{name}</a> : <span>{name}</span> }
+        </li>
+        <Astro.self path={path} />
+    );
+})}
+</ul>
+
+<style>
+
+ul, li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    white-space: nowrap;
+}
+
+li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background .15s;
+}
+
+ul ul {
+    margin-left: 18px;
+}
+
+li.active > a {
+  font-weight: 600;
+}
+
+li.folder::before  { content: "📁" }
+li.file::before    { content: "📄" }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+</style>
+
+
+
