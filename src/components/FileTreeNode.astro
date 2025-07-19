@@ -22,9 +22,18 @@ const pathToSlug = (path: string) => {
 {childPages.map(([path, module]: any) => {
     const slug = pathToSlug(path);
     const isActive = slug.slice(1) === Astro.url.pathname.slice(1);
+
+    let title = module.frontmatter.title;
+    if (!title && module.frontmatter.id) {
+        title = '@' + module.frontmatter.id;
+    }
+    if (!title) {
+        title = path.split('/').slice(-1)[0].replace(/\.mdx$/, '');
+    }
+
     return (
         <li class=`file ${isActive ? 'active' : ''}`>
-            <a href={slug}>{module.frontmatter.title ?? '@' + module.frontmatter.id}</a>
+            <a href={slug}>{title}</a>
         </li>
     );
 })}
