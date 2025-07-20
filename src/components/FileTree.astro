@@ -1,4 +1,5 @@
 ---
+import nodepath from 'node:path';
 import FileTreeNode from './FileTreeNode.astro';
 
 let path = Astro.url.pathname.slice(1)
@@ -21,10 +22,10 @@ if (pagePath.endsWith('/index.mdx')) {
     parentpath = pagePath.split('/').slice(0, -1).join('/');
 }
 
-const parentPage: any = allPages[`${parentpath}/index.mdx`]
+const parentPage: any = allPages[nodepath.join(parentpath, 'index.mdx')]
 
 const upperPath = parentpath.split('/').slice(0, -1).join('/');
-const upperPage = allPages[`${upperPath}/index.mdx`];
+const upperPage = allPages[nodepath.join(upperPath, 'index.mdx')]
 
 const pathToSlug = (path: string) => {
     if (path.startsWith('../')) path = path.slice(3)
