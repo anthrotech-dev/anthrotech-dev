@@ -1,4 +1,5 @@
 ---
+import nodepath from 'node:path';
 const { path } = Astro.props;
 
 const allPages = import.meta.glob('../**/*.mdx', { eager: true });
@@ -39,7 +40,7 @@ const pathToSlug = (path: string) => {
 })}
 {childDirs.map(path => {
 
-    const page = allPages[`${path}/index.mdx`]
+    const page = allPages[nodepath.join(path, 'index.mdx')]
     const name = path.split('/').slice(-1)[0];
 
     return (

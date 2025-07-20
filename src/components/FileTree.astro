@@ -3,6 +3,9 @@ import nodepath from 'node:path';
 import FileTreeNode from './FileTreeNode.astro';
 
 let path = Astro.url.pathname.slice(1)
+if (path.endsWith('/')) {
+    path = path.slice(0, -1);
+}
 
 let pageSlug = path.startsWith('@') ? path.slice(1) : path;
 
