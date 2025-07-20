@@ -21,8 +21,9 @@ if (pagePath.endsWith('/index.mdx')) {
     parentpath = pagePath.split('/').slice(0, -1).join('/');
 }
 
-const upperPath = parentpath.split('/').slice(0, -1).join('/');
+const parentPage: any = allPages[`${parentpath}/index.mdx`]
 
+const upperPath = parentpath.split('/').slice(0, -1).join('/');
 const upperPage = allPages[`${upperPath}/index.mdx`];
 
 const pathToSlug = (path: string) => {
@@ -33,31 +34,52 @@ const pathToSlug = (path: string) => {
     return '/' + path
 }
 
+const isActive = pathToSlug(parentpath) === Astro.url.pathname;
+
+const parentPageTitle = parentPage?.frontmatter?.title || (parentPage?.frontmatter?.id ? ('@' + parentPage?.frontmatter?.id) : parentpath.split('/').slice(-1)[0].replace(/\.mdx$/, ''))
+
 ---
 
 <ul>
     <li>
-        <a href={upperPage ? pathToSlug(upperPath) : '/'}>{upperPage ? upperPath.split('/').slice(-1)[0] : 'Root'}</a>
+        <a href={upperPage ? pathToSlug(upperPath) : '/'}>../</a>
     </li>
-    <FileTreeNode
-        path={parentpath}
-    />
+    <li class={isActive ? 'active' : ''}>
+        {parentPage ?
+            <a href={pathToSlug(parentpath)}>{parentPageTitle}</a>
+            : <span>{parentPageTitle}</span>}
+    </li>
+    <ul>
+        <FileTreeNode
+            path={parentpath}
+        />
+    </ul>
 <ul>
 
 <style>
 
 ul, li {
+    margin: 0;
+    padding: 0;
     list-style: none;
     white-space: nowrap;
 }
 
-ul {
-    padding-left: 0;
-    margin: 0;
-}
-
 li {
     display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background .15s;
+}
+
+ul ul {
+    margin-left: 18px;
+}
+
+li.active > a {
+  font-weight: 600;
 }
 
 li::before  { content: "📁" }

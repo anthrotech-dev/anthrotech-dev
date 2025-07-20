@@ -4,7 +4,7 @@ const { path } = Astro.props;
 const allPages = import.meta.glob('../**/*.mdx', { eager: true });
 
 const childPageRegix = new RegExp(`^${path.replace(/\//g, '\\/')}/?[^/]+\.mdx$`)
-const childPages = Object.entries(allPages).filter(([file]) => file.match(childPageRegix));
+const childPages = Object.entries(allPages).filter(([file]) => file.match(childPageRegix) && !file.endsWith('index.mdx'))
 
 const childDirs = [...new Set(Object.entries(allPages).filter(([file]) => file.startsWith(path) && file.slice(path.length+1).split('/').length === 2).map(([file]) => file.split('/').slice(0, -1).join('/')))]
 
