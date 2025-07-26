@@ -1,17 +1,375 @@
-## template
+## ループを使う
 ```
-目標: 
+目標: for 文を使って、一連のコマンドを繰り返しましょう。
 ```
 回答コード例↓
 ``` swift
+for i in 1 ... 5 {
+    for i in 1 ... 2 {
+        moveForward()
+    }
+    collectGem()
+    moveForward()
+}
 
 ```
 
 ### ◇何をやってるの？  
-1. a
-2. b
-3. c
+「2 歩進んで、宝石を取って、もう 1 歩進む」を一連の処理としてまとめ、それを for 文で 5 回繰り返しています。
 
-aaa
+### ◇コードを詳しく見てみよう！
+- ### `for i in 1 ... 5`
+  `for` 文を使って、「5 回繰り返す」というコマンドブロックを作りました。  
+  `i` の部分は**ループ関数**であり、また**ローカル関数**とも呼ばれるのものです。この `i` の部分は、たとえば「 for `kurikaeshi` in 1 ... 5 」など、**自分で好きに決めることができる**のでしたね。
+
+- ### `for i in 1 ... 2`
+  上記の `for` 文に**ネスト**された `for` 文です。5 回繰り返すコードの中で、「前に進む」を 2 回繰り返すために記述しています。
+
+- ### `moveForward()`
+  おなじみの「前に進む」のコマンドですね。このフィールドでは、まず 2 回繰り返し実行して宝石のあるマスまで進む必要があるので、for 文のコマンドブロックを**ネスト**し、その中に記述しています。
+
+- ### `collectGem()`
+  おなじみの「宝石を取る」のコマンドです。
+
+- ### `moveForward()`
+  最後に 1 歩進み、ワープパッドの上に移動します。  
+  ワープパッドに乗ったら勝手にワープ先に移動するので、一連のコマンドとしてはこのコマンドが最後です。  
+
+その後は、いちばん外側の **5 回繰り返す for 文**が実行され、マップを進んでいきます。
+
+---
+
+## 4辺でループする
+```
+目標: for ループを使って、一連のコマンドを繰り返しましょう。
+```
+回答コード例↓
+``` swift
+for i in 1...4 {
+    moveForward()
+    collectGem()
+    moveForward()
+    moveForward()
+    moveForward()
+    turnRight()
+}
+```
+
+### ◇何をやってるの？  
+「前に進む、宝石を取る、前に 3 回進む右を向く」を一連の処理としてまとめ、それを for 文で 4 回繰り返しています。  
+コード自体は特段複雑な事はしていないので、コードの詳しい解説は割愛します。
+
+---
+
+## 端まで行って戻る
+```
+目標: for 文を使って、行き来するパターンを繰り返しましょう。
+```
+回答コード例↓
+``` swift
+func moreSteps(){
+    moveForward()
+    moveForward()
+}
+
+func turnAround() {
+    turnRight()
+    turnRight()
+}
+
+for i in 1...4{
+    moreSteps()
+    toggleSwitch()
+    turnAround()
+    moreSteps()
+    turnLeft()
+}
+```
+
+### ◇何をやってるの？  
+1. `moreSteps()` という関数を作り、中で `moveForward()` を 2 回実行するようにしています。
+2. `turnAround()` という関数を作り、中で `turnAround()` を 2 回実行するようにしています。
+3. 「2 歩進む、トグる、後ろを向く、さらに 2 歩進む、左を向く」を一連の処理としてまとめ、それを for 文で 4 回繰り返し、全方向に対応しています。
+
+このコードも、全体的には特別なことはしていないので、コードの詳しい解説は割愛します。
+
+---
+
+## ワープでループして
+```
+目標: ワープを通る繰り返しのパターンを見つけましょう。
+```
+回答コード例↓
+``` swift
+func twoSteps(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+for i in 1...5{
+    moveForward()
+    turnLeft()
+    twoSteps(steps: 2)
+    collectGem()
+    turnRight()
+}
+```
+
+### ◇何をやってるの？  
+1. Int 型の steps という引数を持った `twoSteps()` という関数を作り、任意の回数分 `moveForward()` を実行するようにしています。
+2. 「前に進む、左を向く、前に 2 歩進む、宝石を取る、右を向く」を一連の処理としてまとめ、それを for 文で 5 回実行するようにしています。
+
+このマップは一見複雑そうに見えますが、ジグザグに移動すれば全ての宝石を集めることができるようになっています。どこまでを一まとまりにすればよいかを落ち着いて考えてみましょう。
+
+---
+
+## 3 つの分かれ道
+```
+目標: 繰り返しのパターンを分解して、関数と for 文を作りましょう。
+```
+回答コード例↓
+``` swift
+func moreSteps(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+
+func moveYtoggle() {
+    moreSteps(steps: 7)
+    toggleSwitch()
+    turnAround()
+    moreSteps(steps: 7)
+}
+
+for i in 1 ... 3{
+    moreSteps(steps: 2)
+    turnRight()
+    moveYtogglen()
+    turnRight()
+}
+```
+
+### ◇何をやってるの？  
+1. Int 型の steps という引数を持った `moreSteps()` という関数を作り、任意の回数分 `moveForward()` を実行するようにしています。
+2. `turnAround()` という関数を作り、中では for 文を使って `turnLeft()` を 2 回実行するようにしています。
+3. `moveYtoggle()` という関数では、先に作成していた `moreSteps()` に引数として 7 を渡し、スイッチまで 7 回進むように指定しています。　　
+さらに、その後に `toggleSwitch()` でスイッチをトグり、 `turnAround()` で後ろを向き、来た道を 7 歩戻るようにしています。
+
+全体として、「前に 2 歩進む、右を向く、スイッチをトグりに行って戻ってくる、右を向く」を橋 3 つ分繰り返し実行しています。
+
+---
+
+## 右にも左にも
+```
+目標: 複数の繰り返しのパターンを分解して、関数とループを作りましょう。
+```
+回答コード例↓
+``` swift
+func toggleYmove() {
+    for i in 1...2{
+        moveForward()
+        toggleSwitch()
+    }
+}
+
+func collectYmove() {
+    for i in 1...2 {
+        moveForward()
+        collectGem()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        turnRight()
+    }
+}
+
+func moreSteps(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+for i in 1...3{
+    turnLeft()
+    toggleYmove()
+    turnAround()
+    moreSteps(steps: 2)
+    collectYmove()
+    turnAround()
+    moreSteps(steps: 2)
+    turnRight()
+    moveForward()
+}
+```
+
+### ◇何をやってるの？  
+1. 今回のマップは、左にスイッチ、右に宝石がそれぞれ2つずつあります。ここでは、**まず左を向いて**、スイッチから攻略することにします。
+2. スイッチが 2 つ連続して設置してあるので、**前に進んでトグる**を 2 回繰り返し実行します。
+3. スイッチを 2 つトグったら後ろを向いて、さらに 2 歩進み、もとの箇所に戻ります。
+4. 今度は宝石が 2 つ連続して設置してあるので、**前に進んで宝石を取る**を 2 回繰り返し実行します。
+5. 宝石を 2 つ取ったら後ろを向いて、さらに 2 歩進み、もとの箇所に戻ります。
+6. 「右を向いて、前に 1 歩進む」を実行して、次の列に行きます。
+7. 上記の処理を一連の流れとして、全体で 3 回実行するようにしています。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func toggleYmove() {
+    for i in 1...2{
+        moveForward()
+        toggleSwitch()
+    }
+}
+```
+↑ `toggleYmove()` という関数を作り、その中で `moveForward()` と `toggleSwitch()` を 2 回繰り返す for 文を書きました。
+
+```swift
+func collectYmove() {
+    for i in 1...2 {
+        moveForward()
+        collectGem()
+    }
+}
+```
+↑ 宝石を取る以外は `toggleYmove()` と同じなので、`toggleYmove()` を流用して `collectYmove()` 関数を作りました。  
+　もちろん変更箇所は 4 行目を `toggleSwitch()` から `collectGem()` に変えただけです。
+
+```swift
+func turnAround() {
+    for i in 1 ... 2 {
+        turnRight()
+    }
+}
+```
+↑ 毎度おなじみ `turnAround()` です。ここでは for 文を使って「右を向く」を 2 回繰り返しています。
+
+```swift
+func moreSteps(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+```
+↑ 宝石やスイッチの処理が終わった後、もとの位置に戻る為に指定した歩数分歩くための関数です。  
+　今回は 2 歩戻ればよいため、steps には 2 を渡しています。
+
+```swift
+for i in 1...3{
+    turnLeft()
+    toggleYmove()
+    turnAround()
+    moreSteps(steps: 2)
+    collectYmove()
+    turnAround()
+    moreSteps(steps: 2)
+    turnRight()
+    moveForward()
+}
+```
+↑作成した関数を使って、スイッチをトグっては戻り、宝石を取っては戻りを for 文で 3 回実行するようにしています。  
+
+ひとつの列の列の解き方さえ分かってしまえば、あとは繰り返すだけなので、如何に for 文が便利かが分かりますね。
+
+---
+
+## 4 つの場所に 4 つの宝石
+```
+目標: パターンを見つけて分解し、関数を for 文を作る練習をしましょう。
+```
+回答コード例↓
+``` swift
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+}
+
+func collectGemRightSide() {
+    turnRight()
+    moveForward()
+    collectGem()
+    turnAround()
+    moveForward()
+}
+
+func straightGoToWarpPad() {
+    moveForward()
+    collectGem()
+    moveForward()
+}
+
+
+for i in 1 ... 4{
+    for i in 1 ... 2{
+        moveForward()
+        collectGem()
+    }
+    turnAround()
+    moveForward()
+    collectGemRightSide()
+    straightGoToWarpPad()
+}
+```
+
+### ◇何をやってるの？  
+1. 「前に進む、宝石を取る」という一つの処理を for 文で 2 回繰り返し実行しています。
+2. 宝石を取り終わったら、`tuneAround()` と `moveForward()` を使って引き返します。
+3. `collectGemRightSide()` という関数で、引き返してきた地点の右側にある宝石を取り、引き返すという動きをしています。
+4. `straightGoToWarpPad()` という関数で、残りの宝石を取りつつポータルに向かっています。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+}
+```
+↑ `turnAround()` です。ここでは for 文を使って「左を向く」を 2 回繰り返しています。
+
+```swift
+func collectGemRightSide() {
+    turnRight()
+    moveForward()
+    collectGem()
+    turnAround()
+    moveForward()
+}
+```
+↑ 右側にある宝石を取りに行くための関数です。  
+　「右を向く、前に進む、宝石を取る、振り向く、前に進む」を一纏めにしています。
+
+```swift
+func straightGoToWarpPad() {
+    moveForward()
+    collectGem()
+    moveForward()
+}
+```
+↑ ワープパッドに向かいながら宝石を集める関数です。
+
+```swift
+for i in 1 ... 4{
+    for i in 1 ... 2{
+        moveForward()
+        collectGem()
+    }
+    turnAround()
+    moveForward()
+    collectGemRightSide()
+    straightGoToWarpPad()
+}
+```
+↑ 作成した関数を使い、縦二つに並んだ宝石をまず取りに行きます。  
+　そのあと振り返って右側の宝石、最後にワープパッドの隣の宝石を取るという流れで 4 回繰り返し実行します。
 
 ---
