@@ -1,0 +1,103 @@
+---
+import nodepath from 'node:path';
+import FileTreeNode from './FileTreeNode.astro';
+
+let path = Astro.url.pathname.slice(1)
+if (path.endsWith('/')) {
+    path = path.slice(0, -1);
+}
+
+let pageSlug = path.startsWith('@') ? path.slice(1) : path;
+
+const allPages = import.meta.glob('../**/*.mdx', { eager: true });
+
+let pagePath = `../members/${pageSlug}.mdx`;
+let pageModule: any = allPages[pagePath];
+if (!pageModule) {
+    pagePath = `../members/${pageSlug}/index.mdx`;
+    pageModule = allPages[pagePath];
+}
+
+let parentpath = '../'
+if (pagePath.endsWith('/index.mdx')) {
+    parentpath = pagePath.replace(/\/index\.mdx$/, '')
+} else {
+    parentpath = pagePath.split('/').slice(0, -1).join('/');
+}
+
+const parentPage: any = allPages[nodepath.join(parentpath, 'index.mdx')]
+
+const upperPath = parentpath.split('/').slice(0, -1).join('/');
+const upperPage = allPages[nodepath.join(upperPath, 'index.mdx')]
+
+const pathToSlug = (path: string) => {
+    if (path.startsWith('../')) path = path.slice(3)
+    if (path.startsWith("members")) path = '@' + path.slice(8)
+    if (path.endsWith('/index.mdx')) path = path.slice(0, -11)
+    if (path.endsWith('.mdx')) path = path.slice(0, -4)
+    return '/' + path
+}
+
+const isActive = pathToSlug(parentpath) === Astro.url.pathname;
+
+const parentPageTitle = parentPage?.frontmatter?.title || (parentPage?.frontmatter?.id ? ('@' + parentPage?.frontmatter?.id) : parentpath.split('/').slice(-1)[0].replace(/\.mdx$/, ''))
+
+---
+
+<ul>
+    <li>
+        <a href={upperPage ? pathToSlug(upperPath) : '/'}>../</a>
+    </li>
+    <li class={isActive ? 'active' : ''}>
+        {parentPage ?
+            <a href={pathToSlug(parentpath)}>{parentPageTitle}</a>
+            : <span>{parentPageTitle}</span>}
+    </li>
+    <ul>
+        <FileTreeNode
+            path={parentpath}
+        />
+    </ul>
+<ul>
+
+<style>
+
+ul, li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    white-space: nowrap;
+}
+
+li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background .15s;
+}
+
+ul ul {
+    margin-left: 18px;
+}
+
+li.active > a {
+  font-weight: 600;
+}
+
+li::before  { content: "📁" }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+</style>
+
+
+
+
+
