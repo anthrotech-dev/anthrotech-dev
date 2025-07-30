@@ -1,20 +1,389 @@
-## 
+## スイッチを調べる
 ```
-目標: 
+目標: if 文を使って、切れているスイッチだけを切り替えましょう。
 ```
 回答コード例↓
 ``` swift
+for i in 1...2 {
+    moveForward()
+}
+
+for i in 1 ... 3 {
+    if isOnClosedSwitch {
+        toggleSwitch()
+        moveForward()
+    } else {
+        moveForward()
+    }
+}
 ```
 
 ### ◇何をやってるの？  
-1. 
-2. 
-3. 
+  スイッチの上に乗った時、
+
+- オフであったらスイッチを入れて前に進む
+- そうでなければ(オンであれば)そのまま前に進む 
+
+を for 文で 3 回実行しています。
    
 ### ◇コードを詳しく見てみよう！
-- ### `code`
+```swift
+for i in 1...2 {
+    moveForward()
+}
+```
+↑ まず、前に 2 歩進むため for 文で `moveForward()` を実行しています。
 
+```swift
+for i in 1 ... 3 {
+// 分かりやすくするために改行しました
+
+    if isOnClosedSwitch {
+        toggleSwitch()
+        moveForward()
+    } else {
+        moveForward()
+    }
+
+}
+```
+↑ この単元の中心となる `if 文` です。ここでは「キャラクターの状態が `isOnClosedSwitch` であるかどうか(オフのスイッチに乗っているかどうか)」を判断しています。この `isOnClosedSwitch` は Swift Playground で用意されたものです。  
+　もしこの条件を満たしている、つまり true であれば `toggleSwitch()`、`moveForward()` を実行します。そうでなければ、つまり `isOnClosedSwitch` が faise であれば else のブロック内の `moveForward()` のみが実行されます。
+
+---
+
+## else if を使う
+```
+目標: if と else if を使って、スイッチを切り替えるか宝石を取るかを選びましょう。
+```
+回答コード例↓
+``` swift
+moveForward()
+for i in 1 ... 2 {
+    if isOnClosedSwitch {
+        toggleSwitch()
+        moveForward()
+    } else if isOnOpenSwitch {
+        moveForward()
+    } else {
+        collectGem()
+        moveForward()
+    }
+}
+```
+
+### ◇何をやってるの？  
+このマップは
+
+- オンのスイッチ
+- オフのスイッチ
+- 宝石
+
+がランダムに選ばれて設置されます。  
+オフのスイッチの上にいる場合は「スイッチをトグって前に進む」、  
+そうではなく、もしオンのスイッチの上にいる場合は「前に進む」  
+そのどちらでもなければ宝石のマスなので「宝石を取って前に進む」  
+のいずれかを実行するコードを、for 文を使って 2 回繰り返し実行しています。
+   
+### ◇コードを詳しく見てみよう！
+```swift
+moveForward()
+for i in 1 ... 2 {
+// 分かりやすくするために改行しました
+
+    if isOnClosedSwitch {
+        toggleSwitch()
+        moveForward()
+    } else if isOnOpenSwitch {
+        moveForward()
+    } else {
+        collectGem()
+        moveForward()
+    }
+}
+```
+↑ 前のセクションのコードと比較して、if と else の間に `else if {・・・}` という、条件分岐を行うブロックが挿入されています。  
+　この `else if` は、最初の条件以外で実行したい処理を書き込むブロックで、分けたい処理の数だけ `else if {}` を追加することができます。
   
-aaa  
+このマップではスイッチか宝石が必ず設置されるため、今回はスイッチ以外の条件として宝石を処理するコードを else で実行しています。
+
+---
+
+## 条件分岐コードをループする
+```
+目標: ループの中で if 文を使って、スイッチを切り替えたり宝石を集めたりします。
+```
+回答コード例↓
+``` swift
+for i in 1 ... 12 {
+    moveForward()
+    if isOnGem {
+        collectGem()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+    } else {
+    }
+}
+```
+
+### ◇何をやってるの？  
+12マス分 `moveForward()` を実行し、移動先のマスの状態を if 文で判断しています。  
+今回のマップは、スイッチと宝石が設置されないマスも存在するので、そのどちらでもない場合は「何もしない」という処理も必要です。ここでは宝石のマスではなく、オフのスイッチのマスでもない場合に実行される `else {}` のブロックに何も記述しないことで、「何もしない」を実現しています。
+
+複雑なことは行なっていないので、コードの詳しい解説は割愛します。  
+
+---
+
+## 階段を上る条件を探す
+```
+目標: if 文を使って、宝石があったときに実行するコマンドを考えましょう。
+```
+回答コード例↓
+``` swift
+for i in 1 ... 13 {
+    if isOnGem {
+        collectGem()
+        turnLeft()
+        moveForward()
+    } else {
+        moveForward()
+    }
+}
+```
+
+### ◇何をやってるの？  
+1. 今いる地点から 13 マス分の処理を実行する for ループを書きました。
+2. このマップでは、階段がある場所には必ず宝石が設置されているため、宝石があるマスにキャラクターが到着したら「宝石を取り、左を向く」という処理を行います。
+3. 宝石がないマスにいる間は `moveForward()` を実行して前に進みます。
+   
+このコードも複雑なことは行なっていないので、詳しい解説は割愛します。  
+
+---
+
+## 関数をじょうずに使う
+```
+目標: 関数、ループ、条件を使って、宝石を集めたりスイッチをオンにしたりしましょう。
+```
+回答コード例↓
+``` swift
+func collectOrToggle() {
+    if isOnGem {
+        collectGem()
+        moveForward()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+        moveForward()
+    } else {
+        moveForward()
+    }
+}
+
+func collectYtoggle(times: Int) {
+    for i in 1 ... times {
+        collectOrToggle()
+    }
+}
+collectYtoggle(times: 5)
+turnLeft()
+moveForward()
+moveForward()
+turnLeft()
+collectYtoggle(times: 5)
+turnRight()
+moveForward()
+turnRight()
+collectYtoggle(times: 5)
+```
+
+### ◇何をやってるの？  
+1. collectOrToggle() という関数を作り、宝石のマス、オフのスイッチのマス、何もないマスでそれぞれ行う処理を記述しています。
+2. collectYtoggle() という関数を作り、指定した回数分(ここでは一列 5 マス分) `collectOrToggle()` を実行するようにしています。
+3. 一列分が終わったら `tureLeft()` や `turnRight()` で方向転換をし、次の列に移動しています。
+   
+### ◇コードを詳しく見てみよう！
+```swift
+func collectOrToggle() {
+    if isOnGem {
+        collectGem()
+        moveForward()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+        moveForward()
+    } else {
+        moveForward()
+    }
+}
+```
+↑ 1 マス毎に状態を確認し、それぞれで必要な処理を行う関数です。  
+　状態は isOnGem、isOnClosedSwitch、そのどちらでもないマスの 3 つで判断しています。
+
+```swift
+func collectYtoggle(times: Int) {
+    for i in 1 ... times {
+        collectOrToggle()
+    }
+}
+```
+↑ 指定した数だけ `collectOrToggle()` を実行する関数です。  
+　一列あたり 5 マスあるので、今回は times: に 5 を指定しています。
+
+```swift
+collectYtoggle(times: 5)
+turnLeft()
+moveForward()
+moveForward()
+```
+↑ スタート地点一列分のコード
+
+```swift
+turnLeft()
+collectYtoggle(times: 5)
+turnRight()
+moveForward()
+```
+↑ 二つ目の列のコード
+
+```swift
+turnRight()
+collectYtoggle(times: 5)
+```
+↑ 最後の列のコード
+
+---
+
+## 囲まれる
+```
+目標: 条件、関数、ループを上手に使いましょう。
+```
+回答コード例↓
+``` swift
+func wallCheck() {
+    if isBlocked {
+        turnRight()
+        moveForward()
+    } else {
+        moveForward()
+    }
+}
+
+func collectOrToggle() {
+    if isOnGem {
+        collectGem()
+        wallCheck()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+        wallCheck()
+    } else {
+        wallCheck()
+    }
+}
+
+for i in 1...9{
+    collectOrToggle()
+}
+
+```
+
+### ◇何をやってるの？  
+1. `wallCheck()` という関数を作りました。その中で `isBlocked`(塞がれている) という新しい判断条件を使っています。
+2. 宝石のマスやオフのスイッチのマスで必要な処理を行なった後、`wallCheck()` を実行してマスを移動します。
+   
+### ◇コードを詳しく見てみよう！
+``` swift
+func wallCheck() {
+    if isBlocked {
+        turnRight()
+        moveForward()
+    } else {
+        moveForward()
+    }
+}
+```
+↑ `wallCheck()` という関数の名前にもあるように、目の前が壁で塞がれているかどうかを判断します。もし目の前が壁であれば右に曲がって進む、そうでなければそのまま進みます。
+
+```swift
+func collectOrToggle() {
+    if isOnGem {
+        collectGem()
+        wallCheck()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+        wallCheck()
+    } else {
+        wallCheck()
+    }
+}
+```
+↑ 宝石のマスであれば宝石を取って目の前が壁かどうか確認する、オフのマスであればスイッチをトグって目の前が壁かどうかを確認しています。  
+ また、スタート地点から動けるように、そのどちらでもない場合に `wallCheck()` を実行して前に進むという処理を実現しています。
+
+```swift
+for i in 1...9{
+    collectOrToggle()
+}
+```
+↑ スタート地点も含めて 9 マス分実行しています。
+
+---
+
+## 繰り返しを探す
+```
+目標: ステージの状態を確かめて、進む方向を考えましょう。
+```
+回答コード例↓
+``` swift
+func goStraight(steps: Int) {
+    for i in 1 ... steps {
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+}
+
+func solveRightSide() {
+    collectGem()
+    turnRight()
+    goStraight(steps: 3)
+    turnLeft()
+    moveForward()
+    collectGem()
+    turnAround()
+    moveForward()
+    turnRight()
+    goStraight(steps: 3)
+    turnRight()
+}
+
+func solveLeftSide() {
+    toggleSwitch()
+    turnLeft()
+    moveForward()
+    collectGem()
+    turnAround()
+    moveForward()
+    turnLeft()
+}
+
+for i in 1 ... 7 {
+    moveForward()
+    if isOnGem {
+        solveRightSide()
+    } else if isOnClosedSwitch {
+        solveLeftSide()
+    }
+}
+```
+###### ~~めっちゃ長いやん~~
+
+### ◇何をやってるの？  
+1. まず、指定した歩数分進む関数と振り返る関数を作りました。
+2. スタート地点の通りに宝石があっが場合は右の横道に、オフのスイッチがあった場合は左の横道に入って処理を行う関数として `solveRightSide()` と `solveLeftSide()` をそれぞれ作りました。
+3. for 文を回し、宝石のマスであれば `solveRightSide()` を、オフのスイッチのマスの場合は `solveLeftSide()` を実行します。
+   
+コード自体は複雑なことはしていないので、詳しい説明は割愛します。
 
 ---
