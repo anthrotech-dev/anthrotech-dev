@@ -1,0 +1,255 @@
+---
+title: 論理演算子
+---
+
+# 論理演算子
+
+##  NOT 演算子を使う
+```
+目標: NOT 演算子を使って、マスに宝石がない場合は、進む方向を変えましょう。
+```
+回答コード例↓
+``` swift
+func turnAround() {
+    for i in 1 ... 2 {
+        turnRight()
+    }
+}
+
+for i in 1 ... 4 {
+    moveForward()
+
+    if !isOnGem {
+        turnLeft()
+        for forGem in 1 ... 2 {
+            moveForward()
+        }
+        collectGem()
+        turnAround()
+        for returnWay in 1 ... 2 {
+            moveForward()
+        }
+        turnLeft()
+    } else {
+        collectGem()
+    }
+}
+```
+
+### ◇何をやってるの？  
+1. `func` キーワードを使って、**振り返る**ための関数を作っています。
+2. for 文を使って、4 マス進む間に「宝石がない場合」と「宝石がある場合」の 2 通りの処理を書いています。
+3. if 文と NOT 演算子(!)を使って、マスに宝石がないという場合の動作を定義しています。宝石がなければ左を向き、2 歩進んで宝石を取り、振り返って 2 歩んで戻ってきます。
+4. 宝石があれば、そのまま宝石を回収します。
+
+### ◇コードを詳しく見てみよう！
+※ `turnAround()` はおなじみの関数なので省略しました。
+
+```swift
+for i in 1 ... 4 {
+    moveForward()
+```
+↑ 一番最初のマス用、および繰り返しの開始時に一歩前に進むようにするため、for 文の最初に `moveForward()` を書きました。
+
+```swift
+if !isOnGem {
+        turnLeft()
+        for forGem in 1 ... 2 {
+            moveForward()
+        }
+        collectGem()
+        turnAround()
+        for returnWay in 1 ... 2 {
+            moveForward()
+        }
+        turnLeft()
+    } else {
+        collectGem()
+    }
+```
+↑ `!isOnGem` とあるように、**NOT 演算子**を用いることで、false であるはずの isOnGem の Bool 値を true にする、すなわち宝石がない場合を表現できます。if 文の最初のブロックは true の場合に実行されるという性質があるので、 NOT 演算子を使って本来 false として判定される条件を true にしました。
+
+宝石がある場合はそのまま `collectGem()` を実行すればよいので、else ブロックに宝石を回収する関数を書いています。
+
+---
+
+##  NOT で周る
+```
+目標: NOT 演算子を使って、行き止まりになったら左に曲がりましょう。
+```
+回答コード例↓
+``` swift
+for i in 1 ... 14 {
+    if isOnClosedSwitch {
+        toggleSwitch()
+    } else if isBlocked {
+        turnLeft()
+        moveForward()
+    } else if !isBlocked {
+        moveForward()
+    } else if !isOnClosedSwitch {
+        moveForward()
+    }
+}
+```
+
+### ◇何をやってるの？  
+1. 行き止まりになるまで進み、行き止まりになったら左に曲がるように NOT 演算子を使いつつ for 文を回しています。
+2. 判定基準は「スイッチの上か否か」、「行き止まりか否か」です。
+
+
+### ◇コードを詳しく見てみよう！
+```swift
+if isOnClosedSwitch {
+        toggleSwitch()
+    } else if isBlocked {
+        turnLeft()
+        moveForward()
+    } else if !isBlocked {
+        moveForward()
+    } else if !isOnClosedSwitch {
+        moveForward()
+    }
+```
+↑ 最終目標である「オフのスイッチの上かどうか」から順に for 文を使ってコードを書きました。もし if 文の一番最初に `isBlocked` が書かれていた場合、`turnLeft()` を実行すると for ループから抜けるという挙動になるため、`isBlocked` が成立する間、スイッチをトグることができなくなってしまいます。for 文の判断の順序はよく考えて記述するようにしましょう。
+
+---
+
+##  両方正しければ合格
+```
+目標: AND 演算子を使って、2 つの条件が両方とも当てはまったら道順を変えてみましょう。
+```
+回答コード例↓
+``` swift
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()        
+    }
+}
+
+for i in 1 ... 7 {
+    moveForward()
+    if isOnGem && !isBlockedLeft {
+        collectGem()
+    } else if isOnGem && isBlockedLeft {
+        collectGem()
+        turnRight()
+        for i in 1 ... 2 {
+            moveForward()
+        }
+        toggleSwitch()
+        turnAround()
+        for j in 1 ... 2 {
+            moveForward()
+        }
+        turnRight()
+    }
+}
+```
+
+### ◇何をやってるの？  
+1. 宝石があり、進行方向左が壁でなければ宝石を取って直進します。
+2. もし、宝石があり、尚且つ進行方向左が壁であれば右を向き、スイッチをトグりに行きます。
+
+### ◇コードを詳しく見てみよう！
+```swift
+    if isOnGem && !isBlockedLeft {
+        collectGem()
+```
+↑ 宝石があり、左側が壁**ではない**場合の条件分岐。単純に宝石を取るだけです。
+
+```swift
+    } else if isOnGem && isBlockedLeft {
+        collectGem()
+        turnRight()
+        for i in 1 ... 2 {
+            moveForward()
+        }
+        toggleSwitch()
+        turnAround()
+        for j in 1 ... 2 {
+            moveForward()
+        }
+        turnRight()
+    }
+```
+↑ 宝石があり、尚且つ左側が壁の場合の条件分岐。右を向き、2 歩進んでスイッチをトグりに行きます。
+
+---
+
+##  一方でも正しければ合格
+```
+目標: OR 演算子を使って、2 つの条件のどちらかが当てはまる場合は、進む方向を変えましょう。
+```
+回答コード例↓
+``` swift
+for i in 1 ... 13 {
+    if isOnGem {
+        collectGem()
+    } else if !isBlocked && !isBlockedLeft {
+        moveForward()
+    } else if isBlocked || isBlockedLeft {
+        turnRight()
+        moveForward()
+    }
+    
+}
+```
+
+### ◇何をやってるの？  
+1. 前方と左側が両方壁**でなければ**前に進む、どちらか一方が壁であれば右に曲がります。
+2. ここでも、最終目的である宝石の回収を if 文の一番最初のブロックに記述して、条件を満たした場合に確実に回収できるようにしています。
+
+このコードでは、特段複雑な分岐はしていないので詳細な説明は割愛します。
+
+---
+
+##  論理の迷宮
+```
+目標: 論理演算子と条件分岐コードを使って、ステージをクリアしましょう。
+```
+回答コード例↓
+``` swift
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+}
+func collectYtoggle() {
+    collectGem()
+            toggleSwitch()
+            turnRight()
+            for i in 1 ... 2 {
+                moveForward()
+            }
+            collectGem()
+            turnAround()
+            for j in 1 ... 2 {
+                moveForward()
+            }
+            turnRight()
+}
+
+for i in 1 ... 8 {
+    moveForward()
+    if isOnGem && isOnClosedSwitch {
+        collectYtoggle()
+    }
+    else if !isOnGem && isOnClosedSwitch {
+        toggleSwitch()
+        turnLeft()
+    } else if isOnGem && !isOnClosedSwitch {
+        collectGem()
+    }
+}
+```
+
+### ◇何をやってるの？  
+1. スイッチの上に宝石があり、尚且つ右側が壁でない場合はその先にも宝石があるので、対応する関数を `collectYtoggle()` という名前で作りました。
+2. ここでは全て AND 演算子を使って条件判断を行なっています。
+3. 他の条件に反応してしまわないように、「宝石がある」、「オフのスイッチの上である」という条件を if 文の一番最初のブロックに記述しました。
+4. 「宝石が無く、オフのスイッチの上」のパターンと「宝石があり、オフのスイッチではない」というパターンの条件分岐も作成し、マップを奥まで進めるようにしています。
+
+このコードも、特段複雑な分岐はしていないので説明は割愛します。
+
+---
