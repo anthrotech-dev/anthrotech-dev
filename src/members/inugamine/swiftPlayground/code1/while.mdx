@@ -1,0 +1,450 @@
+---
+title: while ループ
+---
+
+# while ループ
+
+## 条件を決めてコードをループする
+```
+目標: ループを使って、入っているスイッチに辿り着くまで進み続けましょう。
+```
+回答コード例↓
+``` swift
+while isOnClosedSwitch {
+    toggleSwitch()
+    moveForward()
+}
+```
+
+### ◇何をやってるの？
+自分の足元が `isOnClosedSwitch`(つまりオフのスイッチ) の間、
+1. スイッチをトグる
+2. 前に進む
+
+を繰り返し行います。最終的にスイッチが初めからオンになっているところまで辿り着き、処理が終了します。
+
+---
+
+## while ループをじょうずに使う
+```
+目標: while ループと if 文を使って、すべてのスイッチを入れましょう。
+```
+回答コード例↓
+``` swift
+while !isBlocked {
+    moveForward()
+    if isOnClosedSwitch {
+        toggleSwitch()
+    }
+}
+```
+
+### ◇何をやってるの？
+3つの島を順に歩き、最後のマス、つまり行き止まりに辿り着くまでスイッチを入れたりしながら進みます。
+
+### ◇コードを詳しく見てみよう！
+```swift
+while !isBlocked {
+    moveForward()
+    ・・・
+}
+```
+↑ `!isBlocked`(壁ではない)の間 `moveForward()` で前に進み続けます。
+```swift
+if isOnClosedSwitch {
+    toggleSwitch()
+}
+```
+↑前に進み続けている間、もしオフのスイッチの上にいる場合はスイッチをトグります。
+
+---
+
+## 正しいループを使う
+```
+目標: すべての宝石を集めるために、もっとも良いループを選びましょう。
+```
+回答コード例↓
+``` swift
+func turnAndCollectGem() {
+    moveForward()
+    turnLeft()
+    moveForward()
+    collectGem()
+    turnRight()
+}
+while !isBlocked {
+    turnAndCollectGem()
+}
+```
+
+### ◇何をやってるの？
+マップのスタート位置から見て左斜め上方向に宝石が並んでいます。ジグザグに移動するため、
+- 前に進む
+- 左を向く
+- 前に進む
+- 宝石を回収
+- 右を向く
+
+を行き止まりに辿り着くまで繰り返し行います。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func turnAndCollectGem() {
+    moveForward()
+    turnLeft()
+    moveForward()
+    collectGem()
+    turnRight()
+}
+```
+↑曲がりながら宝石を収集する `turnAndCollectGem()` という関数を作成します。関数の中には、上記の動作を記述しています。
+
+```swift
+while !isBlocked {
+    turnAndCollectGem()
+}
+```
+↑一つ前のセクションと同じく、壁に到達するまで `while` キーワードで `turnAndCollectGem()` を繰り返し実行しています。
+
+---
+
+## 2 つのループ
+```
+目標: もっと良いループの使い方を見つけて、スイッチを切り替えましょう。
+```
+回答コード例↓
+``` swift
+while !isBlocked {
+    moveForward()
+    if isOnClosedSwitch {
+        toggleSwitch()
+        turnRight()
+    } else if isOnOpenSwitch {
+        turnRight()
+    }
+}
+```
+
+### ◇何をやってるの？
+壁に突き当たるまで前進を繰り返します。  
+このマップではスイッチがある地点で道が分かれているので、
+- オフのスイッチの上に立ったらスイッチをトグって右を向く
+- オンのスイッチの上に立ったら右を向く
+
+を実行しています。
+
+### ◇コードを詳しく見てみよう！
+```swift
+while !isBlocked {
+    moveForward()
+    ・・・
+}
+```
+↑壁に突き当たるまで前進を繰り返す `while` ループです。
+
+```swift
+if isOnClosedSwitch {
+        toggleSwitch()
+        turnRight()
+    } else if isOnOpenSwitch {
+        turnRight()
+    }
+```
+「↑もしオフのスイッチの上に立ったら」スイッチをトグって右を向く、「そうではなくもしオンのスイッチの上に立ったら」右を向くという処理を `if`、`else if` キーワードを使って実行しています。
+
+---
+
+## 回る
+```
+目標: できるだけ効率良くステージをクリアする方法を考えましょう。
+```
+回答コード例↓
+``` swift
+func collectYforward() {
+    while isOnGem {
+        collectGem()
+        moveForward()
+        if isBlocked && isBlockedRight {
+            turnLeft()
+        }
+    }
+}
+
+for i in 1 ... 4 {
+    moveForward()
+    turnLeft()
+    collectYforward()
+    turnRight()
+}
+```
+
+### ◇何をやってるの？
+四つの辺に宝石が設置してあります。一辺をクリアするための関数をまず定義し、それを4回分繰り返し実行しています。
+### ◇コードを詳しく見てみよう！
+```swift
+func collectYforward() {
+    while isOnGem {
+        collectGem()
+        moveForward()
+        if isBlocked && isBlockedRight {
+            turnLeft()
+        }
+    }
+}
+```
+↑この例では、まず宝石のマスに立っている時の挙動を定義しています。`while` キーワードの中に `if` キーワードを入れ(ネスト)、前と右が壁になった時の挙動も定義しています。
+
+```swift
+for i in 1 ... 4 {
+    moveForward()
+    turnLeft()
+    collectYforward()
+    turnRight()
+}
+```
+↑`for` キーワードを使って、全体の動きを定義しました。今回は 4 回繰り返します。
+- 前に進む
+- 左を向く
+- `collectYforward()` を実行する
+- 右を向く
+
+を実行します。
+
+---
+
+## 方法はたくさん
+```
+目標: さまざまな解きかたを試して、上手なクリア方法を見つけましょう。
+```
+回答コード例↓
+``` swift
+func checkYtoggle() {
+    while isOnOpenSwitch || isOnClosedSwitch {
+        if isOnOpenSwitch {
+            moveForward()
+        } else if isOnClosedSwitch {
+            toggleSwitch()
+            moveForward()
+        }
+    }
+}
+
+func collectYmove() {
+    while isOnGem {
+        collectGem()
+        moveForward()
+    }
+}
+
+moveForward()
+checkYtoggle()
+
+if isBlocked {
+    turnRight()
+    moveForward()
+    turnRight()
+}
+
+moveForward()
+collectYmove()
+
+if isBlocked {
+    turnLeft()
+    moveForward()
+    turnLeft()
+}
+
+moveForward()
+checkYtoggle()
+
+
+```
+
+### ◇何をやってるの？
+このマップは実行するたびに島の長さが変わりますが、スイッチと宝石の並びは同じです。  
+まずスイッチを処理するために関数を作成しました。`while` キーワードを使ってオンオフ関わらずスイッチの上にいる時の挙動を定義しています。  
+もし最後の壁に到達したら、右回りで方向転換をします。  
+宝石があるマスを進んでいる間は前に進んでは宝石を取るという動きを `while` キーワードで実行しています。  
+左回りで方向転換をし、再び `checkYtoggle()` を実行して残りを攻略します。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func checkYtoggle() {
+    while isOnOpenSwitch || isOnClosedSwitch {
+        if isOnOpenSwitch {
+            moveForward()
+        } else if isOnClosedSwitch {
+            toggleSwitch()
+            moveForward()
+        }
+    }
+}
+```
+↑`while` キーワードで、「オンのスイッチの上か、または(`||`)オフのスイッチの上である間」を指定します。さらに `if` キーワード、`else if` キーワードをネストして、それぞれの場合の挙動を定義しています。  
+
+```swift
+func collectYmove() {
+    while isOnGem {
+        collectGem()
+        moveForward()
+    }
+}
+```
+↑宝石のマスの間、宝石を取って前に進むという関数を作っています。`while` を使うことで、宝石列の最後のマスで宝石を取る動作を空撃ちするのを防ぐことができます。
+
+```swift
+moveForward()
+checkYtoggle()
+
+if isBlocked {
+    turnRight()
+    moveForward()
+    turnRight()
+}
+
+moveForward()
+collectYmove()
+
+if isBlocked {
+    turnLeft()
+    moveForward()
+    turnLeft()
+}
+
+moveForward()
+checkYtoggle()
+```
+↑今回の一連のコードです。特段複雑なことは行なっておらず、列に合わせて関数や方向転換を `if` キーワードで実行しています。
+
+---
+
+## ループをネストする
+```
+目標: ループの中に入れた別のループを使って、螺旋に沿って移動しましょう。
+```
+回答コード例↓
+``` swift
+while !isBlocked {
+    while !isOnGem {
+        moveForward()
+    }
+    collectGem()
+    turnLeft()
+}
+```
+
+### ◇何をやってるの？
+このマップでは、曲がるべき箇所に宝石が置いてある作りになっています。宝石を取っては左に曲がるを繰り返し、最終的には壁に突き当たってゴールです。  
+そのため、`while` キーワードの中に、さらに `while` キーワードをネストして「正面が壁でない間」、「宝石のマスでない間」を指定して行動するようにしています。
+- 正面が壁でなく、宝石のマスでない間は前に歩き続けます。
+- もし宝石のマスに来たら `!isOnGem{...}` のループから抜けて宝石を取る、左を向くを実行します。
+- そのまま進み続け、最後に壁に突き当たったら `!isBlockde` のループから抜けてプログラムが終了します。
+
+---
+
+## ランダムな四角形
+```
+目標: ネストしたループと条件を使って、変化するステージの中を歩き回りましょう。
+```
+回答コード例↓
+``` swift
+while !isBlocked {
+    while !isBlocked && isBlockedLeft {
+        moveForward()
+    }
+    turnRight()
+    if isOnClosedSwitch {
+        toggleSwitch()
+    }
+}
+```
+
+### ◇何をやってるの？
+このマップも突き当たりまで進み、適宜右に方向転換をしながら進みます。最終的にはオフのスイッチをオンにして終了です。
+
+### ◇コードを詳しく見てみよう！
+```swift
+while !isBlocked {
+    // ↑ 前進用のスターターです。前方に壁が無ければコードブロックを実行します。
+
+    while !isBlocked && isBlockedLeft {
+    // ↑　前方が壁でなく、その上で左が壁のときは前進し続けます。
+        moveForward()
+    }
+    turnRight()
+    // ↑　前方が壁になったら右に方向転換します。
+
+    if isOnClosedSwitch { // ←オフのスイッチの上に立ったらスイッチをトグります。
+        toggleSwitch()
+    }
+}
+```
+「最終的にスイッチをトグるまで」のコードを書きました。
+
+---
+
+## どんな方法でも
+```
+目標: 好きな組み立て方やパターンを使って、ステージをクリアしましょう。
+```
+回答コード例↓
+``` swift
+while !isBlocked {
+    moveForward()
+    if isBlocked {
+        turnRight()
+    }
+    if isOnClosedSwitch {
+        toggleSwitch()
+    }
+    if isOnGem {
+        collectGem()
+    }
+}
+```
+
+### ◇何をやってるの？  
+壁に突き当たらない限りは前に進み続けます。  
+壁に突き当たるか、オフのスイッチの上に乗るか、或いは宝石のマスに居るのかを `if` キーワードを単体で使用して条件ごとに処理を実行しています。  
+最終的には壁に囲まれたところでゴールです。
+
+### ◇コードを詳しく見てみよう！
+```swift
+while !isBlocked {
+    // ↑ 前のセクションと同じく、壁に突き当たるまでブロック内を繰り返し実行します。
+
+    moveForward()
+
+    if isBlocked { // もし壁なら右に曲がります
+        turnRight()
+    }
+    if isOnClosedSwitch { // オフのスイッチの上に立ったらスイッチをトグります。
+        toggleSwitch()
+    }
+    if isOnGem { // もし宝石があれば取ります。
+        collectGem()
+    }
+}
+```
+`else if` を使用した場合、どれか一つの条件が成立した場合、それ以降の `else if` が実行されなくなってしまいます。  
+例:
+```swift
+while !isBlocked {
+    moveForward()
+    if isBlocked { //#1
+        turnRight()
+    } 
+    else if isOnClosedSwitch {
+        toggleSwitch()
+    }
+    else if isOnGem { // #2
+        collectGem()
+    }
+}
+```
+`if - else if` は条件を満たすパターンがある場合、**それ以降の `else if` は無視される**のでしたね。  
+今回のマップでは、宝石は壁がある部分に設置されています。もし上記のコードを実行した場合、`#1` の条件が成立すると、それ以降の `else if` である `#2`は無視されます。すなわち、「壁に到達したから右を向く」の後はコードブロックの最初に戻り `moveForward()` が実行されるため、宝石が取られないまま進んでしまいます。  
+もし今回のマップの四隅にスイッチがあった場合でも同じように `else if isOnClosedSwitch` が無視されることになります。  
+そのため、今回の解答例では `if` キーワードを単体で使用し、常に条件に当てはまるかどうかを評価しながら進むようにしました。
+
+---
