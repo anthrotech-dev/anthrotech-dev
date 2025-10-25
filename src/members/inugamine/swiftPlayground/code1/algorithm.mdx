@@ -1,0 +1,388 @@
+---
+title: アルゴリズム
+---
+
+# アルゴリズム
+
+## 右手法
+```
+目標: 右手法のアルゴリズムを使って、壁を周って進みましょう。
+```
+回答コード例↓
+``` swift
+func navigateAroundWall() {
+    if isBlockedRight {
+        moveForward()
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        turnRight()
+    }
+}
+    
+while !isOnClosedSwitch {
+    navigateAroundWall()
+    if isOnGem {
+        collectGem()
+        turnAround()
+    }
+}
+toggleSwitch()
+```
+
+### ◇何をやってるの？
+都度長さが変わる壁の先の宝石を回収しながら、スイッチまで辿り着くために必要な方法を考えます。  
+今回の例では、
+- 右側が壁であり続ける間は前進する
+- そうでなくなった場合は右を向いて一つ進む
+
+という挙動を組み合わせ、壁に右手を当てながら進む「右手法」をコードで表現しました。  
+これをオフのスイッチの上に到達するまで、繰り返し実行して移動しています。
+
+### ◇コードを詳しく見てみよう！
+
+``` swift
+func navigateAroundWall() {
+    if isBlockedRight {
+        moveForward()
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+```
+↑ いわゆる「右手法」を実現するコードです。まず、右側が壁(と表現しますが崖も)の間は前に進みます。  
+ある程度進むと「右側に壁が**ない**マス」に到達するので、そのマスで右側に方向転換し、前に一歩進みます。  
+一歩進んだ先は「右側に壁が**ある**マス」になるので、`if isBlockedRight` の条件が成立し、前に一歩進みます。  
+この動作を繰り返すための関数が上記のコードです。
+
+`turnAround()` 関数は以前説明したものなので詳細は割愛しますが、「回れ右」をする関数です。
+
+```swift
+while !isOnClosedSwitch {
+    navigateAroundWall()
+    if isOnGem {
+        collectGem()
+        turnAround()
+    }
+}
+toggleSwitch()
+```
+↑ 今回の主となるコードです。`!isOnClosedSwitch` とあるように、「オフのスイッチに**いない間**」繰り返すコードブロックです。`if` キーワードをネストしており、途中で宝石のマスに到達した場合の挙動も定義しています。  
+このマップでは、宝石があるマスは必ず行き止まりになっているので、該当マスまで到達したら宝石を回収して `turnAround()` を実行するようになっています。  
+方向転換後は `!isOnClosedSwitch` のコードブロックの初めから処理が実行されるため、右手法で進み続けます。  
+そのまま進み続けるとオフのスイッチの上まで到達するので、`!isOnClosedSwitch` コードブロックから抜け、`toggleSwitch()` を実行して終了です。
+
+---
+
+## アルゴリズムを直す
+```
+目標: アルゴリズムを直して、増えたブロックを上手に回りましょう。
+```
+回答コード例↓
+``` swift
+func navigateAroundWall() {
+    if isBlockedRight {
+        moveForward()
+        if isBlockedRight && isBlocked && !isBlockedLeft {
+            if isOnGem {
+                collectGem()
+            }
+            turnLeft()
+            moveForward()
+        }
+        if isBlockedRight && isBlocked && isBlockedLeft {
+            turnAround()
+        }
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+    
+while !isOnClosedSwitch {
+    navigateAroundWall()
+    if isOnGem {
+        collectGem()
+        turnLeft()
+    }
+}
+toggleSwitch()
+```
+
+### ◇何をやってるの？
+やっていることは前のセクションと同じですが、今回は「前と右が壁で、左側が空いている」というパターンが増えました。単純な行き止まりであれば `turnAround()` で引き返せばよいのですが、今回はそういうわけにはいきません。そのため、左側が空いている場合は左を向き一歩進むという処理を新たに追加しました。  
+また、`if isBlockedRight && isBlocked && !isBlockedLeft` コードブロックの中に `if isOngem` コードブロックを追加し、宝石を取り漏らすリスクをなくしました。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func navigateAroundWall() {
+    if isBlockedRight {
+        moveForward()
+        if isBlockedRight && isBlocked && !isBlockedLeft {
+            if isOnGem {
+                collectGem()
+            }
+            turnLeft()
+            moveForward()
+        }
+        if isBlockedRight && isBlocked && isBlockedLeft {
+            turnAround()
+        }
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+```
+↑ 壁に沿って歩くコードです。
+- `if isBlockedRight && isBlocked && !isBlockedLeft` というコードブロック  
+右が壁で、前も壁で、左が空いている場合の処理です。  
+`turnLeft()`、`moveForward()` が先に実行され、たまに宝石が取れない現象が発生するため、このブロックには `if isOnGem` のコードブロックをネストし、移動前に宝石のマスかどうかを評価する機能を入れました。  
+
+- `if isBlockedRight && isBlocked && isBlockedLeft` というコードブロック  
+右も前も、左も壁のパターンです。この場合は問答無用で `turnAroound()` を実行して方向転換を行います。
+```swift
+while !isOnClosedSwitch {
+    navigateAroundWall()
+    if isOnGem {
+        collectGem()
+        turnLeft()
+    }
+}
+toggleSwitch()
+```
+↑ この部分は前のセクションと変わりません。壁に沿って歩き、最後はオフのスイッチをトグって終了します。  
+
+※ このコードは inugaminé の解答例よりも Swift Playground の解答例の方がもちろんスマートなので、以下に回答を引用しておきます。シンプルですね！
+```swift
+func navigateAroundWall() {
+    if isBlockedRight && isBlocked {
+        turnLeft()
+    } else if isBlockedRight {
+        moveForward()
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+
+while !isOnClosedSwitch {
+    navigateAroundWall()
+    if isOnGem {
+        collectGem()
+    }
+}
+toggleSwitch()
+```
+
+---
+
+## 迷路を解く
+```
+目標: 右手法を使って、迷路を進んでみましょう。
+```
+回答コード例↓
+``` swift
+func navigateAroundWall() {
+    if isBlockedRight {
+        moveForward()
+        if isBlockedLeft && isBlocked && isBlockedRight {
+            turnAround()
+        }
+        if isBlocked && isBlockedRight {
+            turnLeft()
+        }
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        turnRight()
+    }
+}
+
+while !isOnGem {
+    navigateAroundWall()
+    
+}
+collectGem()
+```
+
+### ◇何をやってるの？
+右手法を使って迷路を進みます。
+- 右手が壁の場合は前に進む
+- もし前、左右が壁で行き止まりになった場合は引き返す
+- もし前と右が壁で、左が空いている場合は左を向く
+- そうでなければ右を向いて一歩前に進む
+
+という機能を `navigateAroundWall()` 関数に持たせました。  
+宝石のマスに到達しない間、この動きを繰り返します。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func navigateAroundWall() {
+    if isBlockedRight {
+        moveForward()
+        if isBlockedLeft && isBlocked && isBlockedRight {
+            turnAround()
+        }
+        if isBlocked && isBlockedRight {
+            turnLeft()
+        }
+    } else {
+        turnRight()
+        moveForward()
+    }
+}
+```
+↑ 右が壁の間、前に進みます。その際、`if` キーワードにより前に進んだ先が行き止まりか、あるいは左だけ空いている状態かを都度評価します。  
+`else` 句の部分では、右側が空いている、すなわち「右が壁ではない」場合なので右を向き、一歩前に進みます。
+
+```swift
+while !isOnGem {
+    navigateAroundWall()
+    
+}
+collectGem()
+```
+↑ それを `!isOnGem` の間、つまり宝石マスに到達しない間繰り返し実行します。  
+最後は宝石のマスに辿り着くためコードブロックから抜け、`collectGem()` を実行して終了です。
+
+---
+## どっちの手を使う？
+```
+目標: 独自のアルゴリズムを書いて迷路をクリアしましょう。
+```
+回答コード例↓
+``` swift
+func navigateAroundWall() {
+    if !isOnClosedSwitch {
+        moveForward()
+        if isOnClosedSwitch && !isBlocked {
+            turnRight()
+            toggleSwitch()
+            moveForward()
+        } else if isOnClosedSwitch && isBlocked {
+            turnLeft()
+            toggleSwitch()
+            moveForward()
+        }
+    }
+}
+
+while !isOnGem {
+    navigateAroundWall()
+}
+collectGem()
+```
+
+### ◇何をやってるの？
+スイッチに到達する度に、右に沿って進むか左に沿って進むかを切り替えながら進んでいきます。  
+このマップでは、スイッチの上に立った時に前が壁であれば左、前が壁でなければ右に曲がることにより、正しいルートを選択できるようになっています。この法則をコードで表現し、宝石のマスまで進みます。
+
+### ◇コードを詳しく見てみよう！
+```swift
+func navigateAroundWall() {
+    if !isOnClosedSwitch {
+        moveForward()
+        if isOnClosedSwitch && !isBlocked {
+            turnRight()
+            toggleSwitch()
+            moveForward()
+        } else if isOnClosedSwitch && isBlocked {
+            turnLeft()
+            toggleSwitch()
+            moveForward()
+        }
+    }
+}
+```
+`!isOnClosedSwitch` の場合は前に進みます。  
+進んだ先でその都度スイッチの上かどうか、スイッチの上であれば前が壁かどうかを評価しています。
+もし目の前が `!isBlocked` であれば右を向いてトグって前に進みます。  
+目の前が `isBlocked` であれば、逆に左を向いてトグって前に進みます。
+これを宝石のマスに辿り着くまで繰り返し実行します。
+
+---
+## 右に行くか、左に行くか
+```
+目標: 宝石を集めてスイッチを入れるための、上手なアルゴリズムを考えましょう
+```
+回答コード例↓
+``` swift
+func 行き止まりになるまで進む() {
+    if !isBlocked {
+        moveForward()
+    }else if !isBlockedLeft && !isBlockedRight && isOnClosedSwitch {
+        turnLeft()
+    } else if isBlockedRight || !isBlockedLeft {
+        turnLeft()
+    } else if isBlockedLeft || !isBlockedRight {
+        turnRight()
+    }
+}
+
+while !isBlocked || !isBlockedRight || !isBlockedLeft {
+    行き止まりになるまで進む()
+    if isOnGem {
+        collectGem()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+    }
+}
+
+```
+
+### ◇何をやってるの？
+行ったり来たりを繰り返しながら進み、`isOnGem` なのか `isOnClosedSwitch` なのかで実行する処理を変えています。
+### ◇コードを詳しく見てみよう！
+```swift
+func 行き止まりになるまで進む() {
+    if !isBlocked {
+        moveForward()
+    } else if !isBlockedLeft && !isBlockedRight && isOnClosedSwitch {
+        turnLeft()
+    } else if isBlockedRight || !isBlockedLeft {
+        turnLeft()
+    } else if isBlockedLeft || !isBlockedRight {
+        turnRight()
+    }
+}
+```
+↑ `else if !isBlockedLeft && !isBlockedRight && isOnClosedSwitch` は、階段を降りてすぐのスイッチ用の条件式です。この部分だけ、前が塞がっていて、右と左は空いている状態のため、意図的に左を向くようにしました。  
+それ以外の部分は、上から順に
+- `if !isBlocked`: 目の前が壁でなければ前に進む
+- `else if isBlockedRight || !isBlockedLeft`: 右が壁で左が空いていれば左を向く
+- `else if isBlockedLeft || !isBlockedRight`: 左が壁で右が空いていれば右を向く
+
+となっています。
+
+```swift
+while !isBlocked || !isBlockedRight || !isBlockedLeft {
+    行き止まりになるまで進む()
+    if isOnGem {
+        collectGem()
+    } else if isOnClosedSwitch {
+        toggleSwitch()
+    }
+}
+```
+↑ 前も右も左も壁でない間実行するコードブロックです。  
+マップの最後、仕切りがあるマスまで到達するとコードが終了します。
+
+---
