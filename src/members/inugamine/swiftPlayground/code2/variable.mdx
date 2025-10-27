@@ -1,0 +1,538 @@
+---
+title: 変数
+---
+
+# 変数
+
+
+## 記録する
+```
+目標: 集めた宝石の数を記録する変数を作りましょう。
+```
+回答コード例↓
+``` swift
+var gemCountes = 0
+
+func collectYaddCount() {
+    collectGem()
+    gemCounter = gemCounter + 1
+}
+
+while !isOnGem {
+    moveForward()
+}
+if isOnGem {
+    collectYaddCount()
+}
+```
+
+### ◇何をやってるの？
+まず `var gemCounter` に 0 を代入して初期化します。名前のとおり、この変数が宝石を取った個数を記録する変数です。  
+`collectYaddCount()` 関数を作成し、宝石を取ったら `gemCounter` に 1 を加算するという処理を行っています。  
+`while` ループを使用し、 `!isOnGem` の間は前に進み、もし `isOnGem` の条件が成立すれば `collectYaddCount()` を実行します。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCountes = 0 // 初期化を行う部分。
+
+func collectYaddCount() {
+    collectGem()
+    gemCounter = gemCounter + 1 // gemCounter に 1 足したものを再度格納している。
+}
+```
+↑ `collectYaddCount()` 関数を作成し、宝石を取る処理と `gemCounter` に数値を代入する処理を書いています。  
+以降のコードは、特段複雑なことはしていないので説明は割愛します。
+
+---
+
+## 値を増やす(1)
+```
+目標: 宝石を取るたびに gemCounter(宝石カウンター) の値を増やしていきましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter = gemCounter + 1
+}
+
+while gemCounter < 5 || !isBlocked || !isBlockedRight || !isBlockedLeft {
+    moveForward()
+    if isOnGem {
+        collectYaddCounter()
+    }
+}
+```
+
+### ◇何をやってるの？
+宝石の数を記録する変数と宝石を取る度に　`gemCounter` に 1 を足したものを再び代入する処理は同じです。  
+`while` コードブロックの内容は、
+- `gemCounter` が 5 未満である
+- 前が壁でない
+- 右が壁でない
+- 左が壁でない
+
+のいずれかが成立しなくなるまで繰り返し前に進みます。  
+`while` コードブロックの中に `if isOnGem` をネストしているので、一歩進むたびに宝石のマスかどうかを評価しています。宝石のマスであれば `collectYaddCounter()` 関数が呼ばれ、宝石の回収と `gemCounter` に 1 を足したものが再度代入されます。(これをインクリメントと呼びます)
+
+---
+
+## 値を増やす(2)
+```
+目標: 変数の値を 1 つずつ増やして、集めた宝石の数を記録しましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter = gemCounter + 1
+}
+
+func showGemResult() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+    var gemResult = gemCounter - 1
+
+    for i in 1 ... gemResult {
+        if !isBlocked {
+                moveForward()
+            } else if !isBlockedLeft || isBlockedRight {
+                turnLeft()
+                moveForward()
+            } else if isBlockedLeft || !isBlockedRight {
+                turnRight()
+                moveForward()
+            }
+    }
+}
+
+while !(isBlocked && isBlockedRight && isBlockedLeft) {
+    if !isBlocked {
+        moveForward()
+    } else if !isBlockedLeft || isBlockedRight {
+        turnLeft()
+    } else if isBlockedLeft || !isBlockedRight {
+        turnRight()
+    }
+    if isOnGem {
+        collectYaddCounter()
+    }
+}
+
+showGemResult()
+```
+
+### ◇何をやってるの？
+宝石を取る毎に `gemCounter` の値を 1 ずつ増やしていきます。  
+せっかく宝石の数を記録したので、行き止まりからの距離を利用して宝石の数をマスの数で表すことにしました。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCounter = 0
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter = gemCounter + 1
+}
+```
+↑ `gemCounter` の初期化を行い、`collectYaddCounter()` という関数を作成しています。  
+この関数の中では、宝石を取る機能と、`gemCounter` に 1 を足す処理を纏めています。
+
+```swift
+func showGemResult() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+    var gemResult = gemCounter - 1
+
+    for i in 1 ... gemResult {
+        if !isBlocked {
+                moveForward()
+            } else if !isBlockedLeft || isBlockedRight {
+                turnLeft()
+                moveForward()
+            } else if isBlockedLeft || !isBlockedRight {
+                turnRight()
+                moveForward()
+            }
+    }
+}
+```
+↑ 記録した宝石の数をマスの数を利用して表示する関数です。まず回れ右して後ろを向くようにします。  
+1 マス目から表示に利用するため、「宝石の数 - 1」して表示数を合わせます。  
+(つまり一番奥に立っている状態で 1 を表します。)  
+そのあとは、来た道を宝石の数ぶん戻ります。帰りは左にだけ曲がりばいいのですが、調子に乗って右に曲がるパターンも用意してみました。
+
+```swift
+while !(isBlocked && isBlockedRight && isBlockedLeft) {
+    if !isBlocked {
+        moveForward()
+    } else if !isBlockedLeft || isBlockedRight {
+        turnLeft()
+    } else if isBlockedLeft || !isBlockedRight {
+        turnRight()
+    }
+    if isOnGem {
+        collectYaddCounter()
+    }
+}
+
+showGemResult() // 最後に宝石の表示機能を実行します。
+```
+↑ 今回のコードの本体です。右も左も、前も行き止まりになるまで `while` コードブロック内を繰り返します。`if` もネストして、それぞれの条件に沿ってコードを分岐しています。  
+今回も `if` を単体で使用して今いるマスに宝石があるかどうかを毎回評価しています。
+
+---
+
+## 7 つの宝石を集める
+```
+目標: ちょうど 7 個の宝石を集めましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+
+func turnAround() {
+    for i in 1 ... 2{
+        turnRight()
+    }    
+}
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter = gemCounter + 1
+}
+
+while gemCounter < 7 {
+    if !isOnGem {
+        moveForward()
+        if isOnGem {
+            collectYaddCounter()
+        }
+        if isBlocked {
+            turnAround()
+        }
+    }
+}
+```
+
+### ◇何をやってるの？
+`gemCounter` の値が 7 になるまで `while` コードブロック内を繰り返します。  
+行き止まりに到達する度に方向転換を行なう関数も作っています。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCounter = 0
+
+func turnAround() {
+    for i in 1 ... 2{
+        turnRight()
+    }    
+}
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter = gemCounter + 1
+}
+```
+↑ 変数の初期化や各種関数を用意している部分です。これまでと同じ機能なので詳しい説明は割愛します。
+```swift
+while gemCounter < 7 {
+    if !isOnGem {
+        moveForward()
+        if isOnGem {
+            collectYaddCounter()
+        }
+        if isBlocked {
+            turnAround()
+        }
+    }
+}
+```
+↑ 今回のコードの本体部分です。`while gemCounter < 7 {...}` とあるように、`gemCounter` が 7 未満である間は前に進んで宝石を回収し、壁に到達しては折り返して宝石収集を続けます。
+
+---
+
+## 3 つの宝石と 4 つのスイッチ
+```
+目標: 宝石を 3 つだけ取って、スイッチを 4 つだけ入れましょう。
+```
+回答コード例↓
+``` swift
+var countGem = 0
+var toggledSwitch = 0
+
+func moveAhead() {
+    if !isBlocked {
+        moveForward()
+    }
+    else if !isBlockedLeft || isBlockedRight {
+        turnLeft()
+    }
+    else if isBlockedLeft || !isBlockedRight {
+        turnRight()
+    }
+}
+
+while countGem < 3 || toggledSwitch < 4{
+    moveAhead()
+    if isOnGem && countGem < 3 {
+        collectGem()
+        countGem = countGem + 1
+    }
+    if isOnClosedSwitch && toggledSwitch < 4 {
+        toggleSwitch()
+        toggledSwitch = toggledSwitch + 1
+    }
+}
+```
+
+### ◇何をやってるの？
+宝石カウント用の変数とスイッチカウント用の変数を用意し、両方の条件が成立するまで `moveAhead()` を実行しています。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var countGem = 0
+var toggledSwitch = 0
+
+func moveAhead() {
+    if !isBlocked {
+        moveForward()
+    }
+    else if !isBlockedLeft || isBlockedRight {
+        turnLeft()
+    }
+    else if isBlockedLeft || !isBlockedRight {
+        turnRight()
+    }
+}
+```
+↑ 宝石とスイッチ用の変数を宣言しています。また、壁の状態を判定しながら前に進む関数を定義しています。
+
+```swift
+while countGem < 3 || toggledSwitch < 4{
+    moveAhead()
+    if isOnGem && countGem < 3 {
+        collectGem()
+        countGem = countGem + 1
+    }
+    if isOnClosedSwitch && toggledSwitch < 4 {
+        toggleSwitch()
+        toggledSwitch = toggledSwitch + 1
+    }
+}
+```
+↑ `countGem` が 3 以下、または `toggledSwitch` が 4 以下である間実行され続けるコードブロックです。  
+`if isOnGem && countGem < 3 {...}`: 宝石マスであり、かつ `countGem` が 3 以下であれば宝石を回収し、カウンターに 1 を足します。  
+`if isOnClosedSwitch && toggledSwitch < 4 {...}`: オフのスイッチの上にいて、かつ `toggledSwitch` が 4 以下であればスイッチをトグり、カウンターに 1 を足します。
+
+---
+
+## 値が等しいかどうかを調べる
+```
+目標: スイッチと同じ数だけ宝石を集めましょう
+```
+回答コード例↓
+``` swift
+let switchCounter = numberOfSwitches
+var gemCounter = 0
+
+while gemCounter < switchCounter {
+    while !isBlocked {
+        moveForward()
+        if isOnGem {
+            collectGem()
+            gemCounter = gemCounter + 1
+        }
+        }
+    if isBlocked {
+        turnRight()
+    }
+}
+```
+
+### ◇何をやってるの？
+Swift Playground が用意した「オンのスイッチの値が格納されている定義」を使用して、`switchCounter` という定数を宣言しています。  
+`while` キーワードを使い、`gemCunter` の値が `switchCounter` 以下の間、コードブロックを実行します。
+
+### ◇コードを詳しく見てみよう！
+```swift
+let switchCounter = numberOfSwitches
+```
+↑ Swift Playground で用意された `numberOfSwitches` を `switchCounter` に代入しています。  
+以降変更する予定のないものを宣言するときには `let` を使うのでしたね。今回の場合は `switchCounter` は値がズレると困るため、`let` を使って宣言しています。
+
+```swift
+var gemCounter = 0 // gemCounter を 0 で初期化
+
+while gemCounter < switchCounter {
+    while !isBlocked {
+        moveForward()
+        if isOnGem {
+            collectGem()
+            gemCounter = gemCounter + 1
+        }
+        }
+    if isBlocked {
+        turnRight()
+    }
+}
+```
+↑ `gemCounter` が `switchCounter` 以下の間実行されるコードブロックです。  
+目の前が壁でない間は前に進み続け、都度宝石があるマスかどうか確認しています。今回のマップは時計回りに進み続ければよいので壁にぶつかったら右を向くようにしています。
+
+---
+
+## 決まった数だけスイッチを入れる
+```
+目標: 集めた宝石と同じ数のスイッチを入れましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+var turnedSwitch = 0
+
+func gehen() {
+    if !isBlocked || !isBlockedLeft || !isBlockedRight {
+        if !isBlocked {
+            moveForward()
+        } else if !isBlockedLeft && isBlockedRight {
+            turnLeft()
+        } else if isBlockedLeft && !isBlockedRight {
+            turnRight()
+        }
+    }
+}
+
+while !isOnClosedSwitch {
+    gehen()
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+    }
+}
+
+while isOnClosedSwitch {
+    while gemCounter != turnedSwitch {
+        gehen()
+        if isOnClosedSwitch {
+            toggleSwitch()
+            turnedSwitch += 1
+        }
+    }
+}
+```
+
+### ◇何をやってるの？
+宝石を集めた数と同じだけスイッチをトグります。このマップではワープパッドのギミックを使って隣の台まで移動できるため、時計回りに進みながら宝石を集め、そのまま時計回りでスイッチを入れていくことにします。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCounter = 0
+var turnedSwitch = 0
+
+func gehen() {
+    if !isBlocked || !isBlockedLeft || !isBlockedRight {
+        if !isBlocked {
+            moveForward()
+        } else if !isBlockedLeft && isBlockedRight {
+            turnLeft()
+        } else if isBlockedLeft && !isBlockedRight {
+            turnRight()
+        }
+    }
+}
+```
+↑ 変数の宣言と、前に進み続けるための関数を定義しているところです。  
+`if !isBlocked || !isBlockedLeft || !isBlockedRight`: 行き止まりでない間は実行し続けるようにしています。このマップは寄り道しない限りは「行き止まり」に入ることはないため、実質歩き続けることになります。  
+`else if !isBlockedLeft && isBlockedRight`: 一つ目の分岐です。直前の `if` 文と組み合わせ、目の前が壁で左側が空いている場合は左を向くコードブロックです。(今回のマップでは活躍の機会はありません。)  
+`else if isBlockedLeft && !isBlockedRight`: 二つ目の分岐です。`if` 文と組み合わせ、目の前が壁で右側が空いている場合は右を向くコードブロックです。今回は時計回りで進むので、このコードブロックが活躍します。
+
+---
+
+## 決まった数だけ集める
+```
+目標: ランダムに決められた数の宝石を集めましょう。宝石の数は totalGems(宝石の合計数) で表されます。
+```
+回答コード例↓
+``` swift
+let totalGems = randomNumberOfGems
+var gemCounter = 0
+
+func gehenZu() {
+    if !isBlocked || !isBlockedLeft || !isBlockedRight {
+        if !isBlocked {
+            moveForward()
+        } else if !isBlockedLeft || isBlockedRight {
+            turnLeft()
+        } else if isBlockedLeft || !isBlockedRight {
+            turnRight()
+        }
+    } else {
+        turnAround()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+}
+
+while gemCounter < totalGems {
+    gehenZu()
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+    }
+}
+```
+
+### ◇何をやってるの？
+このマップは「値が等しいかどうかを調べる」と同じく、Swift Playground 側で用意されているものを代入して使用します。
+
+### ◇コードを詳しく見てみよう！
+```swift
+let totalGems = randomNumberOfGems
+var gemCounter = 0
+
+func gehenZu() {
+    if !isBlocked || !isBlockedLeft || !isBlockedRight {
+        if !isBlocked {
+            moveForward()
+        } else if !isBlockedLeft || isBlockedRight {
+            turnLeft()
+        } else if isBlockedLeft || !isBlockedRight {
+            turnRight()
+        }
+    } else {
+        turnAround()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        turnLeft()
+    }
+}
+```
+↑ これまでによく見てきた流れなので詳しい説明は割愛しますが、壁の状態に合わせて右を向いたり左を向いたりして前に進む動作などを定義しています。
+
+```swift
+while gemCounter < totalGems {
+    gehenZu()
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+    }
+}
+```
+↑ 今回の主な処理の部分です。  
+`while` コードブロックでコードを実行し続け、宝石を `totalGems` 分集めるという処理を行なっています。
+
+---
