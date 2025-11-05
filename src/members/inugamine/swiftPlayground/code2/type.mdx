@@ -5,80 +5,618 @@ title: 型
 # 型
 
 
-## title
+## ワープをオフにする
 ```
-目標: 
+目標: ワープをオフにして、スイッチのある場所まで行きましょう。
 ```
 回答コード例↓
 ``` swift
+func steps() {
+    for i in 1...3 {
+        moveForward()
+    }
+}
 
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+
+greenPortal.isActive = false
+
+for i in 1...3 {
+    steps()
+    turnLeft()
+    steps()
+    toggleSwitch()
+    turnAround()
+}
 ```
-
 ### ◇何をやってるの？
+これまではマップのギミックを操作せずに攻略できていましたが、今回のマップでは、緑のワープパッドをコードで操作し、機能を無効化しています。  
+そのあとは、これまで通りマップのマスを数え、振り向いたりスイッチをトグったりして進みます。
+ 
 
 
 ### ◇コードを詳しく見てみよう！
+```swift
+func steps() {
+    for i in 1...3 {
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+```
+↑ 3 歩前に進むための関数 `steps()` と、振り向くための関数 `turnAround()` を定義しています。  
+どの橋(?)も同じ歩数でスイッチまでたどり着けるため、`steps()` に「前に進む」という機能をまとめています。これで何度も `moveForward()` を呼び出さなくても済むようになりました。  
+`turnAround()` に関してはお馴染みの関数なので説明は割愛します。  
+
+
+```swift
+greenPortal.isActive = false
+```
+↑ この `greenPortal` は Swift Playground が用意した*クラス*や*構造体*と呼ばれるものから作成されたもので、インスタンスと呼ばれます。  
+ここでは `greenPortal`という**インスタンス**の `isActive` プロパティに `false` を**代入する**ことで、ワープ機能を無効化しています。このように、ドット（`.`）を使ってインスタンスのプロパティやメソッドにアクセスする構文を「ドット表記」と言います。  
+```swift
+for i in 1...3 {
+    steps()
+    turnLeft()
+    steps()
+    toggleSwitch()
+    turnAround()
+}
+```
+↑ 今回のメインのコードです。`func` キーワードで宣言した `steps()` や `toggleSwitch()` などの基本的な関数を `for` 文で回しています。  
+今回のマップでは、開始地点を起点として同じ動作を繰り返して攻略できる地形をしているため、3 回実行するようにしました。
+
+---
+
+## ワープのオンとオフ
+```
+目標: ワープを有効にしたり無効にしたりして、宝石を集め、スイッチを切り替えましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+
+func toggleYdeactivate() {
+    toggleSwitch()
+    purplePortal.isActive = false
+}
+
+purplePortal.isActive = false
+
+while !isOnClosedSwitch {
+    moveForward()
+    if isBlocked {
+        turnAround()
+    }
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+        if gemCounter == 1 {
+            purplePortal.isActive = true
+        }
+    }
+}
+
+if isOnClosedSwitch {
+    toggleYdeactivate()
+    while !isBlocked {
+        moveForward()
+        if isOnGem {
+            collectGem()
+        }
+    }
+}
+```
+
+### ◇何をやってるの？
+まず最初にワープパッドをオフにして、宝石を回収しに行けるようにします。宝石を回収し終わったら振り返り、ワープパッドに向かって進み、隣の島に移動します。  
+進行方向にオフのスイッチがあるので、そのまま進み、スイッチをトグります。
+スイッチをトグると同時にワープパッドをオフにし、残りの宝石の回収に向かいます。
+
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCounter = 0
+
+func turnAround() {
+    for i in 1...2 {
+        turnLeft()
+    }
+}
+
+func toggleYdeactivate() {
+    toggleSwitch()
+    purplePortal.isActive = false
+}
+```
+↑ 準備の部分です。`gemCounter` という変数を作成し、0 を代入しました。これは後ほどワープパッドの起動に使用します。`turnAround()` については割愛します。  
+`toggleYdeactivate()` 関数は、スイッチをトグる動作とワープパッドをオフにする動作をまとめた関数です。
+
+```swift
+purplePortal.isActive = false
+```
+↑ 前回のセクションにもありましたが、ワープパッドを無効にする部分です。このような書き方を*ドット表記*というのでしたね。
+```swift
+while !isOnClosedSwitch {
+    moveForward()
+    if isBlocked {
+        turnAround()
+    }
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+        if gemCounter == 1 {
+            purplePortal.isActive = true
+        }
+    }
+}
+
+if isOnClosedSwitch {
+    toggleYdeactivate()
+    while !isBlocked {
+        moveForward()
+        if isOnGem {
+            collectGem()
+        }
+    }
+}
+```
+↑ 今回の処理は大きく二つに分かれていて、`while` 文と `if` 文です。  
+`while` 文ではオフのスイッチに乗ってない間、繰り返し実行するコードを書いています。`while` 文の中にはそれぞれ条件分岐のための `if` 文がネストされており、壁に突き当たった場合に `turnAround()` を、宝石のマスにいる場合には宝石を取ります。
+```swift
+if gemCounter == 1 {
+            purplePortal.isActive = true
+}
+```
+↑ 宝石をひとつ取ったら、一度オフにしたワープパッドをオンにします。  
+これにより、壁に突き当たって引き返してきた時にそのまま隣の島へ移動できるようになりますね。
+
+```swift
+if isOnClosedSwitch {
+    toggleYdeactivate()
+    while !isBlocked {
+        moveForward()
+        if isOnGem {
+            collectGem()
+        }
+    }
+}
+```
+↑ 隣の島に渡り、スイッチの上に来た時の処理を記述した部分です。(つまり隣の島用の処理です)  
+`toggleYdeactivate()` により、スイッチをトグるった後にワープパッドをオフにします。これで残りの宝石を回収しに行けるようになります。  
+最後に、`while` 文の `!isBlocked` の部分を壁に突き当たるまで繰り返し実行するようにしています。  
+宝石があるマスでは宝石を回収しながら奥まで進んで終了です。
+
+---
+
+## ワープを正しく操作する
+```
+目標: 2組のワープのオンとオフを切り替えて、宝石を集めましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+
+bluePortal.isActive = false
+pinkPortal.isActive = false
+
+func gehen() {
+    if !isBlocked || !isBlockedLeft || !isBlockedRight {
+        if !isBlocked {
+            moveForward()
+        } else if !isBlockedLeft || isBlockedRight {
+            turnLeft()
+        } else if isBlockedLeft || !isBlockedRight {
+            turnRight()
+        }
+    }
+    if isBlocked {
+        turnAround()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnRight()
+    }
+}
+
+while gemCounter < 3 {
+    gehen()
+    while isOnGem {
+        collectGem()
+        gemCounter += 1
+        bluePortal.isActive = true
+        pinkPortal.isActive = true
+    }
+}
+turnAround()
+bluePortal.isActive = false
+for i in 1...2 {
+    moveForward()
+}
+collectGem()
+```
+
+### ◇何をやってるの？
+進捗に合わせて、ワープパッドのオンとオフを切り替えながら宝石を集めています。  
+一見複雑そうに見えますが、キャラクターの進行方向に合わせてそれぞれ違った色のワープパッドのオンとオフを切り替えているだけであり、前 2 つのセクションとやっていることは変わりません。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCounter = 0
+
+bluePortal.isActive = false
+pinkPortal.isActive = false
+
+func gehen() {
+    if !isBlocked || !isBlockedLeft || !isBlockedRight {
+        if !isBlocked {
+            moveForward()
+        } else if !isBlockedLeft || isBlockedRight {
+            turnLeft()
+        } else if isBlockedLeft || !isBlockedRight {
+            turnRight()
+        }
+    }
+    if isBlocked {
+        turnAround()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnRight()
+    }
+}
+```
+↑ まずは準備段階のコードから。上から順に
+- `var gemCounter = 0` で宝石を数えるための変数を宣言しています。
+- 青とピンクのポータルを無効にしています。
+- 壁を回避して進む関数 `gehen()` を宣言しています。関数名が思いつかなかったので go を意味するドイツ語を採用しました。名前は自由でかまいません。
+- `turnAround()` 関数を宣言しています。これはお馴染みのやつなので説明は割愛します。
+
+```swift
+while gemCounter < 3 {
+    gehen()
+    while isOnGem {
+        collectGem()
+        gemCounter += 1
+        bluePortal.isActive = true
+        pinkPortal.isActive = true
+    }
+}
+turnAround()
+bluePortal.isActive = false
+for i in 1...2 {
+    moveForward()
+}
+collectGem()
+```
+↑ 主な処理の部分です。`gemCounter` が 3 以下の間、「壁を避けながら進む(`gehen()`)」動作を実行します。  
+宝石のマスに立った場合は宝石を回収し、`gemCounter` をインクリメントし、ポータルを 2 つオンにします。  
+宝石が 3 つ集まったら `while` 文を抜け、後続のコードを逐次実行します。  
+3 つ目の宝石を取った時点でループから抜けているので、`turnAround()` で振り返ります。  
+青のポータルが起動したままなのでオフにします。最後の宝石まで 2 歩あるので、ここでは練習として `for` 文を使い、`moveForward()` を 2 回実行するようにしました。最後に宝石を取って終了です。
+
+---
+
+## 隅々まで歩き回る
+```
+目標: 2組のワープのオンとオフを切り替えて、ステージをクリアしましょう。
+```
+回答コード例↓
+``` swift
+var gemCounter = 0
+var switchCounter = 0
+
+orangePortal.isActive = false
+greenPortal.isActive = false
+
+turnRight()
+
+func gehen() {
+    if isBlockedLeft {
+        if isBlocked {
+            turnAround()
+        }
+        moveForward()
+    }
+    if !isBlockedLeft {
+        turnLeft()
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnRight()
+    }
+}
+
+func toggleYaddCount() {
+    toggleSwitch()
+    switchCounter += 1
+}
+
+
+while switchCounter < 6 {
+    gehen()
+    if isOnClosedSwitch {
+        toggleYaddCount()
+        if switchCounter == 2 {
+            orangePortal.isActive = true
+            turnAround()
+            moveForward()
+            orangePortal.isActive = false
+        }
+        if switchCounter == 3 {
+            greenPortal.isActive = false
+            turnAround()
+            moveForward()
+            turnRight()
+            moveForward()
+            toggleYaddCount()
+            turnAround()
+            for i in 1...2{
+                moveForward()
+            }
+            toggleYaddCount()
+        }
+    }
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+        if gemCounter == 4 {
+            for i in 1...3 {
+                moveForward()
+            }
+            collectGem()
+            gemCounter += 1
+        }
+        if gemCounter == 6 {
+            greenPortal.isActive = true
+        }
+    }
+}
+```
+
+### ◇何をやってるの？
+一見すると地続きになっているように見えますが、スイッチ側の島は高低差がありワープパッドなしでは辿り着けないところにスイッチが設置してあります。  
+そのため、まずスタート地点側のスイッチをトグりに行き、次に宝石を回収し、最後にワープパッドで飛んだ先のスイッチをトグりに行くことにしました。
+
+### ◇コードを詳しく見てみよう！
+```swift
+var gemCounter = 0
+var switchCounter = 0
+
+orangePortal.isActive = false
+greenPortal.isActive = false
+
+turnRight()
+
+func gehen() {
+    if isBlockedLeft {
+        if isBlocked {
+            turnAround()
+        }
+        moveForward()
+    }
+    if !isBlockedLeft {
+        turnLeft()
+        moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1...2 {
+        turnRight()
+    }
+}
+
+func toggleYaddCount() {
+    toggleSwitch()
+    switchCounter += 1
+}
+```
+↑ 準備として、変数や関数を宣言しています。  
+今回の `gehen()` 関数は以下のような動きをします。
+
+- もし左が壁で、正面も壁の場合は振り返る、正面が壁でなければ前に進む
+- もし左が壁でなければ左を向いて前に進む
+
+また、`toggleYaddCount()` 関数では「スイッチをトグってカウントをひとつ増やす」という機能をまとめています。
+
+```swift
+while switchCounter < 6 {
+    gehen()
+    if isOnClosedSwitch {
+        toggleYaddCount()
+        if switchCounter == 2 {
+            orangePortal.isActive = true
+            turnAround()
+            moveForward()
+            orangePortal.isActive = false
+        }
+        if switchCounter == 3 {
+            greenPortal.isActive = false
+            turnAround()
+            moveForward()
+            turnRight()
+            moveForward()
+            toggleYaddCount()
+            turnAround()
+            for i in 1...2{
+                moveForward()
+            }
+            toggleYaddCount()
+        }
+    }
+    if isOnGem {
+        collectGem()
+        gemCounter += 1
+        if gemCounter == 4 {
+            for i in 1...3 {
+                moveForward()
+            }
+            collectGem()
+            gemCounter += 1
+        }
+        if gemCounter == 6 {
+            greenPortal.isActive = true
+        }
+    }
+}
+```
+↑ `switchCounter` が 6 未満の間、`while` ループ内の処理を繰り返します。 まず `gehen()` 関数でキャラクターを移動させます。
+
+`isOnClosedSwitch` (オフのスイッチの上に乗っている) 場合、`toggleYaddCount()` でスイッチを切り替えて `switchCounter` を 1増やします。
+
+`switchCounter` が 2 になった時、オレンジのポータルを一時的に有効にしてワープし、すぐにまた無効にしています。  
+
+`switchCounter` が 3 になった時、緑のポータルを無効にし、特定のルートを移動してさらに 2 つのスイッチを切り替えています。  
+
+`isOnGem` (宝石の上に乗っている) 場合、`collectGem()` で宝石を回収し `gemCounter` を 1増やします。
+
+`gemCounter` が 4 になった時、3マス進んでさらに宝石を回収します。
+`gemCounter` が 6 になった時、緑のポータルを有効にします。
 
 
 ---
 
-## 
+## 宝石があちこちランダムに
 ```
-目標: 
-```
-回答コード例↓
-``` swift
-
-```
-
-### ◇何をやってるの？
-
-### ◇コードを詳しく見てみよう！
-
-
----
-
-## 
-```
-目標: 
+目標: ランダムに決められた数の宝石を集めましょう。宝石の数は `totalGems` で表されます。
 ```
 回答コード例↓
 ``` swift
+let totalGems = randomNumberOfGems
+var gemCounter = 0
+var wallCounter = 0
 
+func moveUntilWall() {
+    if !isBlocked {
+        moveForward()
+    } else if isBlocked {
+        for i in 1...2 {
+            turnLeft()
+        }
+        wallCounter += 1
+    }
+}
+
+func turnPortalOff() {
+    pinkPortal.isActive = false
+    bluePortal.isActive = false
+}
+
+func turnPortalOn() {
+    pinkPortal.isActive = true
+    bluePortal.isActive = true
+}
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter += 1
+}
+
+turnPortalOff()
+
+while gemCounter < totalGems {
+    moveUntilWall()
+    if wallCounter % 2 == 1 {
+        turnPortalOff()
+    }
+    if wallCounter % 2 == 0 {
+        turnPortalOn()
+    }
+    if isOnGem {
+        collectYaddCounter()
+    }
+    
+}
 ```
 
 ### ◇何をやってるの？
+回収しなければならない宝石の数がまずランダムに決定されます。指定された数の宝石を回収するため、ワープパッドを使ってそれぞれの島(?)に移動し、足場を隅から隅まで移動して散らばっている宝石を回収します。宝石回収の間、ワープパッドに乗ってもワープしないようにしています。  
 
 ### ◇コードを詳しく見てみよう！
-
----
-
-## 
+```swift
+let totalGems = randomNumberOfGems
+var gemCounter = 0
+var wallCounter = 0
 ```
-目標: 
+↑ `let` キーワードで宣言した `totalGems` という**定数**に、Swift Playground 側で用意された `randomNumberOfGems` を代入します。ここで代入した数値は後から変わってほしくない(回収しなければならない宝石の数に影響する)ため、明示的に `let` を使って宣言しました。  
+Swift では、後から値を変更する必要があるもの以外は **`let` キーワードを使って定数を宣言することが推奨**されています。  
+`gemCounter` と `wallCounter` は変更が発生するものとして宣言したいので `var` キーワードを使って変数にしました。 
+
+```swift
+func moveUntilWall() {
+    if !isBlocked {
+        moveForward()
+    } else if isBlocked {
+        for i in 1...2 {
+            turnLeft()
+        }
+        wallCounter += 1
+    }
+}
 ```
-回答コード例↓
-``` swift
+↑ 壁まで進む関数です。ワープパッドの起動・停止に使用するため、壁にぶつかったら `wallCounter` をインクリメントするようにしています。
 
+```swift
+func turnPortalOff() {
+    pinkPortal.isActive = false
+    bluePortal.isActive = false
+}
+
+func turnPortalOn() {
+    pinkPortal.isActive = true
+    bluePortal.isActive = true
+}
+
+func collectYaddCounter() {
+    collectGem()
+    gemCounter += 1
+}
 ```
+↑ そのほかの関数です。それぞれ名前の通りなので詳細な説明は割愛します。
 
-### ◇何をやってるの？
+```swift
+turnPortalOff()
 
-### ◇コードを詳しく見てみよう！
-
----
-
-## 
+while gemCounter < totalGems {
+    moveUntilWall()
+    if wallCounter % 2 == 1 {
+        turnPortalOff()
+    }
+    if wallCounter % 2 == 0 {
+        turnPortalOn()
+    }
+    if isOnGem {
+        collectYaddCounter()
+    }
+    
+}
 ```
-目標: 
-```
-回答コード例↓
-``` swift
-
-```
-
-### ◇何をやってるの？
-
-### ◇コードを詳しく見てみよう！
+↑ 主な処理のコードです。まずすべてのポータルを無効にします。  
+`gemCounter` が `totalGems` 未満の間 `moveUntilWall` を実行し続けます。  
+ネストした `if` 文の中に `wallCounter` があります。壁にぶつかった回数が奇数、つまりワープパッドを中心として片側しか歩いていない間はワープパッドを無効にして両端まで歩けるようにします。  
+反対に、`wallCounter` が偶数になれば、島(?)を隅まで歩いて宝石が回収できたということなので、ワープパッドを起動して隣の島に移動できるようになります。  
 
 ---
