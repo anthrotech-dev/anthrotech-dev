@@ -155,7 +155,11 @@ export default function ActivityHeatmap({ id }: ActivityHeatmapProps) {
     const height = TOP + 7 * (CELL + GAP);
 
     return (
-        <div>
+        <div
+            style={{
+                overflowX: "auto",
+            }}
+        >
             <svg width={width} height={height} role="img" aria-label={`Activity for ${id}`}>
                 {/* Month labels */}
                 {monthLabels.map((m, i) => (
