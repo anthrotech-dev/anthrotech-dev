@@ -1,5 +1,6 @@
 # build output
 dist/
+public/members.json
 
 # generated types
 .astro/

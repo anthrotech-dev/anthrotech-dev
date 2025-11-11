@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "prebuild": "pip install -r ./scripts/requirements.txt && python ./scripts/gen_memberlist.py",
+    "build": "pnpm prebuild && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
