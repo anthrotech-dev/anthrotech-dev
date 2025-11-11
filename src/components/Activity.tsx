@@ -4,7 +4,10 @@ export type ActivityHeatmapProps = {
     id: string;
 };
 
-type ActivityMap = Record<string, number>;
+type ActivityMap = Record<string, {
+    count: number
+    has_special?: boolean
+}>;
 interface ActivityData {
     id: string,
     user_id: string,
@@ -21,6 +24,7 @@ const TOP = 24; // space for month labels
 const LEFT_LABEL_PAD = 16; // space for weekday labels
 
 // GitHub-like green palette
+const SPECIAL = "#FA990F";
 const PALETTE = ["#ebedf0", "#965ED1", "#7333B8", "#5426A3", "#2000B1"]; // 0..4
 
 // Helper: format date to YYYY-MM-DD in local time
@@ -126,7 +130,7 @@ export default function ActivityHeatmap({ id }: ActivityHeatmapProps) {
     // Compute max count for scaling
     const max = useMemo(() => {
         let m = 0;
-        for (const k in data) m = Math.max(m, data[k] || 0);
+        for (const k in data) m = Math.max(m, data[k].count || 0);
         return m;
     }, [data]);
 
@@ -172,9 +176,10 @@ export default function ActivityHeatmap({ id }: ActivityHeatmapProps) {
                     <g key={w} transform={`translate(${w * (CELL + GAP)}, 0)`}>
                     {col.map((d, i) => {
                         const key = fmt(d);
-                        const v = data[key] || 0;
+                        const bucket = data[key];
+                        const v = bucket?.count || 0;
                         const lvl = getColorLevel(v, max);
-                        const color = PALETTE[lvl];
+                        const color = bucket?.has_special ? SPECIAL : PALETTE[lvl];
                         const isFuture = d > today;
                         return (
                             <rect
@@ -193,7 +198,7 @@ export default function ActivityHeatmap({ id }: ActivityHeatmapProps) {
                                 }}
                             >
                                 <title>
-                                {`${key}: ${v} activit${v === 1 ? "y" : "ies"}`}
+                                    {`${key}: ${v} activit${v === 1 ? "y" : "ies"}`}
                                 </title>
                             </rect>
                         );
