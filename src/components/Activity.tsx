@@ -24,7 +24,7 @@ const TOP = 24; // space for month labels
 const LEFT_LABEL_PAD = 16; // space for weekday labels
 
 // GitHub-like green palette
-const SPECIAL = "#FA990F";
+const SPECIAL = "#1F0FFF";
 const PALETTE = ["#ebedf0", "#965ED1", "#7333B8", "#5426A3", "#2000B1"]; // 0..4
 
 // Helper: format date to YYYY-MM-DD in local time
@@ -198,8 +198,13 @@ export default function ActivityHeatmap({ id }: ActivityHeatmapProps) {
                                 stroke="#e5e7eb"
                                 strokeWidth={1}
                                 onClick={() => {
-                                    setSelectedDate(key);
+                                    if (key === selectedDate) {
+                                        setSelectedDate(null);
+                                    } else {
+                                        setSelectedDate(key);
+                                    }
                                 }}
+                                opacity={selectedDate ? (selectedDate === key ? 1 : 0.4) : 1}
                             >
                                 <title>
                                     {`${key}: ${v} activit${v === 1 ? "y" : "ies"}`}
