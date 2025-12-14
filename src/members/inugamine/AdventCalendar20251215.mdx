@@ -1,8 +1,13 @@
 # azooKey で Colemak 使いたい → PR マージまでの一日
 
-皆さんこんにちは。「[Anthrotech Advent Calendar 2025](https://adventar.org/calendars/11972)」、15 日担当の inugaminé です。
+皆さんこんにちは。「[Anthrotech Advent Calendar 2025](https://adventar.org/calendars/11972)」、15 日担当の inugaminé です。  
+この記事はケモノ界隈の技術者のためのコミュニティ: [Anthrotech](https://anthrotech.dev/) で公開されています。  
+ケモノが好きでコンピュータなどの技術に興味がある方はぜひリンク先をチェックしてみてください！  
 
-今回は、人生初のアドベントカレンダーとして、OSS プロジェクトである「azooKey」に初めて本格的なプルリクエストを投げ、そのプルリクエストがマージされるまでのお話を書かせていただこうと思います。
+昨日は[@RyoTN](https://anthrotech.dev/@ryotn/)さんの[ConcrntでRustFSを使おう！～MinIOからの移行～](https://zenn.dev/ryotn/articles/0a6789776cf6bb)という記事でした。  
+新しいシステムにスムーズに移行できる技術力、凄まじいですね👀✨
+
+さて、今回は人生初のアドベントカレンダーとして、OSS プロジェクトである「azooKey」に初めて本格的なプルリクエストを投げ、そのプルリクエストがマージされるまでのお話を書かせていただこうと思います。
 
 [実際に作成したプルリクエスト](https://github.com/azooKey/azooKey-Desktop/pull/230)
 
@@ -10,7 +15,7 @@
 ## そもそもあんた誰よ - 自己紹介と前提のお話
 
 改めまして[戌咬音かんぬき (inugaminé) ](https://anthrotech.dev/@inugamine/)といいます。  
-普段は Concrnt や Bluesky 地方に存在していて、日常のあれこれや、最近興味を持っている [Swift](https://www.swiftlangjp.com/) について、ああでもないこうでもないと言いながらポストをしているプログラミング初心者です。
+普段は[ととがんま](https://anthrotech.dev/@totegamma/)さんが中心となって開発が進められている分散型SNS基盤 [Concrnt](https://concrnt.world/welcome) や Bluesky 地方に存在していて、日常のあれこれや、最近興味を持っている [Swift](https://www.swiftlangjp.com/) について、ああでもないこうでもないと言いながらポストをしているプログラミング初心者です。
 
 今日はぜひ名前だけでも覚えていってください。
 
@@ -150,7 +155,7 @@ if let value = value as? NSString {
 という修正内容になりました。  
 また、設定画面の修正箇所も Claude に教えてもらい、勉強中の SwiftUI でチェックボックスを実装しました。
 
-ちなみにチェックボックスを設けるには
+ちなみにチェックボックスを設けるには `Toggle()` というものを使い、
 
 ```swift
 Toggle("macOSのキーボード配列を使用", isOn: $respectSystemKeyboardLayout)
