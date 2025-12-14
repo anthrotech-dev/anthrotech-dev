@@ -11,10 +11,41 @@ title: 初期化
 
 回答コード例↓
 ``` swift
+let expert = Expert()
 
+var gemCounter = 0
+var lockUpCount = 0
+
+func steps(count: Int) {
+    for i in 1 ... count {
+        expert.moveForward()
+    }
+}
+
+func turnAround() {
+    for i in 1 ... 2 {
+        expert.turnRight()
+    }
+}
+
+while gemCounter < 3 {
+    steps(count: 3)
+    if lockUpCount == 0 {
+        expert.turnLockUp()
+        lockUpCount += 1
+    } else {
+        expert.collectGem()
+        gemCounter += 1
+    }
+    turnAround()
+    steps(count: 3)
+    expert.turnLeft()
+}
 ```
 ### ◇何をやってるの？
-
+`let` キーワードを使用して `expert` を初期化し、エキスパートと呼ばれるキャラクターを利用可能にします。  
+次にエキスパートの新しいスキルを使用して、鍵を開けます。  
+最後は、元の足場まで戻り、同じ動きを繰り返して宝石を集めていきます。
 
 ### ◇コードを詳しく見てみよう！
 ```swift
