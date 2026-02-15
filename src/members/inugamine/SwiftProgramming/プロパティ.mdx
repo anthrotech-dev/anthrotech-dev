@@ -1,0 +1,830 @@
+## 格納プロパティ (Stored Properties)
+一番シンプルなプロパティ。クラスや構造体のインスタンスの一部として、値をそのまま保存する。  
+`var` で宣言すれば変数、`let` で宣言すれば定数になる。
+```swift
+struct FixedLenghtRange {
+    var firstValue: Int // 変数格納プロパティ (変更可能)
+    let length: Int     // 定数格納プロパティ (変更不可)
+}
+var range = FixedLengthRange(firstValue: 0, length: 3)
+range.firstValue = 6 // OK: var なので変更できる
+// range.length = 5  // エラー: let なので変更できない
+```
+
+---
+##### 定数に割り当てた構造体インスタンスの格納プロパティ
+インスタンス自体を `let` で宣言した場合、**中のプロパティが `var` でも変更できなくなる**。
+```swift
+let fixedRange = FixedLengthRange(firstValue: 0, length: 4)
+// fixedRange.firstValue = 6 // エラー: var なのに変更できない
+```
+理由は**構造体が値型**だからである。値型のインスタンスを `let` で束縛すると、そのインスタンスの全体が、中身の `var` も含めて凍結される。  
+一方、**クラスは参照型**なのでこれは当てはまらない。
+```
+値型（構造体）                  参照型（クラス）
+┌────────────────┐             ┌──────┐     ┌───────────────┐
+│ let fixedRange │             │ let  │────▶│ オブジェクト    │
+│ firstValue: 0  │  ← 全部凍結  │ 参照  │固定  │ firstValue: 0 │ ← 中身は変更可
+│ length: 4      │             └──────┘     │ length: 4     │
+└────────────────┘                          └───────────────┘
+```
+
+---
+##### 遅延格納プロパティ (Lazy Stored Properties)
+`lazy` 修飾子を付けると、そのプロパティは**最初にアクセスされるまで初期化されない**。
+```swift
+class DataImporter {
+    var filename = "data.txt"
+    // 初期化にとても時間がかかると想定
+}
+
+class DataManager {
+    lazy var importer = DataImporter() // まだ作られない
+    var data: [String] = []
+}
+
+let manager = DataManager()
+manager.data.append("Some data")
+// ↑ この時点ではまだ import は生成されていない
+
+print(manager.import.filename)
+// ↑ ここで初めて DataImporter が生成される
+// data.txt
+```
+どういう時に使うか？:
+- 初期化コストが高い (ファイル読み込み、ネットワーク接続など)
+- 使われないかもしれないプロパティ
+- 初期値が、インスタンスの初期化完了後でないと決まらない場合
+
+制約が2つある:
+1. **必ず `var` で宣言する** - `let` は初期化完了前に値が確定していないといけないが、`lazy` は遅延するのでその要件を満たせない。
+2. **スレッドセーフではない** - 複数スレッドから同時にアクセスされた場合、1回だけ初期化される保証がない
+
+##### 格納プロパティのまとめ:
+- 格納プロパティは `var` (変更可能) か `let` (変更不可)
+- **構造体インスタンスを `let` で束縛すると中身も全部凍結** (値型だから)
+- **クラスインスタンスを `let` で束縛しても中の `var` は変更可能** (参照型だから)
+- `lazy` で遅延初期化できるが、必ず `var` で宣言。スレッドセーフではない
+
+
+## 計算プロパティ (Computed Properties)
+格納プロパティが「値を直接保存する」のに対して、計算プロパティは**値を保存せず、アクセスされるたびに計算して返す**。(他のプロパティの値をもとに「導出」するイメージ)
+
+##### 基本形: getter と setter
+```swift
+struct Point {
+    var x = 0.0, y = 0.0
+}
+struct Size {
+    var width = 0.0, height = 0.0
+}
+struct Rect {
+    var origin = Point()
+    var size = Size()
+    var center: Point {
+        get {
+            let centerX = origin.x + (size.width / 2)
+            let centerY = origin.y + (size.height / 2)
+            return Point(x: centerX, y: centerY)
+        }
+        set(newCenter) {
+            origin.x = newCenter.x - (size.width / 2)
+            origin.y = newCenter.y - (size.height / 2)
+        }
+    }
+}
+```
+`center` は格納プロパティではない。`origin` と `size` から**毎回計算して求める**。  
+そして `center` に値を代入すると、setter が走って `origin` の方が書き換わる。
+```swift
+var square = Rect(origin: Point(x: 0.0, y: 0.0), size: Size(width: 10.0, height: 10.0))
+
+print(square.center) // point(x: 5.0, y: 5.0) ← getter が計算
+square.center = Point(x: 15.0, y: 15.0) // ← setter が origin を変更
+print(square.center) // point(x: 10.0, y: 10.0)
+```
+つまり計算プロパティは「**読む時は get、書く時は set**」というルールを定義しているだけで、自分自身は何も保存していない。
+
+##### setter の省略記法 (Shorthand Setter)
+setter のパラメーター名を省略すると、デフォルトで `newValue` が使える。
+```swift
+var center: Point {
+    get {
+        let centerX = origin.x + (size.width / 2)
+        let centerY = origin.y + (size.height / 2)
+        return Point(x: centerX, y: centerY)
+    }
+    set { // パラメーター名を省略する
+        origin.x = newValue.x - (size.width / 2) // newValue が自動で使える
+        origin.y = newValue.y - (size.height / 2)
+    }
+    
+}
+```
+`set(newCenter)` と書いていたのが `set` だけで済む。
+
+---
+##### getter の省略記法 (Shorthand Getter)
+getter の本文が**単一式**なら、`return`を省略できる。(関数の暗黙リターンと同じルールである)
+```swift
+var center: Point {
+    get {
+        Point(x: origin.x + (size.width / 2),
+              y: origin.y + (size.height / 2)) // Point() に全て纏めて return 省略
+    }
+    set {
+        origin.x = newValue.x - (size.width / 2)
+        origin.y = newValue.y - (size.height / 2)
+    }
+}
+```
+
+---
+##### 読み取り専用計算プロパティ (Read-Only Computed Properties)
+getter だけで setter がないもの。さらに **`get {}` の波括弧すら省略できる**。
+```swift
+struct Cuboid {
+    var width = 0.0, height = 0.0, depth = 0.0
+    var volume: Double {
+        return width * height * depth
+    }
+}
+```
+これが一番スッキリした形である。  
+`volume` は `width * height * depth` から一意に決まるので、setter を用意する意味がない。  
+こういうケースに最適。
+
+
+ここで大事なルールがひとつ。
+>**計算プロパティは必ず `var` で宣言する**
+
+値が固定ではなく毎回計算で変わるので、`let` は使えない。読み取り専用でも `var` である。  
+ここは直感に反するかもしれないが、`let` は「初期化後に値が変わらない」という意味であり、計算プロパティの「呼ばれるたびに計算する」とは根本的に違う。
+
+---
+##### 格納プロパティと計算プロパティの使い分け
+```
+格納プロパティ              計算プロパティ
+───────────────────      ─────────────────
+値を直接保存する            値を保存しない (毎回計算)
+let / var どちらもOK       var のみ
+メモリを消費する            メモリ消費なし (計算コストはある)
+独立した値                 他のプロパティから導出される値
+```
+基本的な指針としては、**他のプロパティから計算で求められる値は、冗長に保存せず計算プロパティにする**のが Swift 流である。データの整合性も保ちやすい。
+
+
+## プロパティオブザーバ (Property Observer)
+プロパティの値が**変更されるタイミング**を監視して、それに応じたアクションを起こす仕組み。
+
+使えるのは2つ:
+`willSet` - 値が格納される**直前**に呼ばれる
+`didSet` - 値が格納された**直後**に呼ばれる
+```
+値の代入が発生
+    │
+    ▼
+ willSet（新しい値を受け取る。まだ書き換わってない）
+    │
+    ▼
+ 実際に値が書き換わる
+    │
+    ▼
+ didSet（古い値を受け取る。もう書き換わった後）
+```
+
+---
+##### 基本の例:
+```swift
+class 歩数カウンター {
+    var 合計歩数: Int = 0 {
+        willSet(新しい歩数) {
+            print("これから合計歩数を \(新しい歩数) に変更します")
+        }
+        didSet {
+            if 合計歩数 > oldValue {
+                print("\(合計歩数 - oldValue) 歩増えました")
+            }
+        }
+    }
+}
+
+let カウンター = 歩数カウンター()
+カウンター.合計歩数 = 200
+// これから合計歩数を 200 に変更します
+// 200 歩増えました
+
+カウンター.合計歩数 = 360
+// これから合計歩数を 360 に変更します
+// 160 歩増えました
+```
+
+
+---
+##### 重要な注意: 値が同じでも呼ばれる
+```swift
+カウンター.合計歩数 = 360
+カウンター.合計歩数 = 360 // 同じ値でも willSet/didSet が呼ばれる
+```
+「変わったかどうか」ではなく「代入が発生したかどうか」がトリガーとなる。
+
+##### `willSet` と `didSet` のパラメーター
+それぞれ受け取る値が違う:
+```
+willSet
+├── 受け取るもの：これから設定される「新しい値」
+├── カスタム名：willSet(新しい歩数) のように指定できる
+└── 省略時：newValue がデフォルト名
+
+didSet
+├── 受け取るもの：さっきまで入ってた「古い値」
+├── カスタム名：didSet(前の歩数) のように指定できる
+└── 省略時：oldValue がデフォルト名
+```
+上記の例だと `willSet` はカスタム名である "新しい歩数" を使っていて、`didSet` はデフォルトの "oldValue" を使っている。
+
+##### どういう場面で使うのか？
+計算プロパティの setter と似ているように見えるが、役割が違う。
+```
+計算プロパティの setter → 値を受け取って「他のプロパティを書き換える」
+プロパティオブザーバ → 自分自身の値が変わったときに「副作用を起こす」
+```
+具体的な使い道:
+- ログ出力 (「値が変わりました」のような記録)
+- バリデーション (上限を超えたら補正する)
+- UI 更新 (値が変わったら画面を更新する)
+- 他の値との連動 (歩数が変わったら最高記録を更新する)
+
+---
+##### didSet 内での値の上書き
+`didSet` の中でプロパティ自身に値を代入すると、**設定されたばかりの値を上書きできる**。  
+しかも、オブザーバは再び呼ばれない。
+```swift
+struct AudioChannel {
+    static let しきい値 = 10
+    static var 全チャンネル最大値 = 0
+    var 現在のレベル: Int = 0 {
+        didSet {
+            // しきい値を超えたら強制的に 10 に戻す
+            if 現在のレベル > AudioChannel.しきい値 {
+                現在のレベル = AudioChannel.しきい値
+            }
+            // 全チャンネルの最大値を更新
+            if 現在のレベル > AudioChannel.全チャンネル最大値 {
+                AudioChannel.全チャンネル最大値 = 現在のレベル
+            }
+        }
+    }
+}
+
+var 左 = AudioChannel()
+左.現在のレベル = 7
+print(左.現在のレベル) // 7
+print(AudioChannel.全チャンネル最大値) // 7
+
+左.現在のレベル = 15 // 15 を設定しようとするが...
+print(左.現在のレベル) // 10
+print(AudioChannel.全チャンネル最大値) // 10
+```
+この例では型プロパティ(`static`)も出てきているが、これは後のセクションで取り扱う。  
+ここでは「全インスタンス共有の値」程度の認識で問題ない。
+
+---
+次の場所にプロパティオブザーバを追加できる:
+- 自分で定義した格納プロパティ ← 一番よくあるパターン
+- 継承した格納プロパティ (サブクラスでオーバーライドして追加)
+- 継承した計算プロパティ (同上)
+
+継承したプロパティの場合、サブクラスでそのプロパティをオーバーライドすることにより、プロパティオブザーバを追加する。  
+自分で定義した計算プロパティの場合、オブザーバを作成する代わりに `set` を使用して値の変更を監視し、応答する。  
+(計算プロパティには自前の setter があるので、そこで値の変更に対応すればよい)
+
+ここまでのポイントまとめ:
+- `willSet` は更新**直前**、`didSet` は更新**直後**に呼ばれる
+- デフォルトパラメーター名は `newValue`(willSet) と `oldValue` (didSet)
+- `didSet` 内で値を上書きしてもオブザーバは再呼び出しされない
+- 値が同じでも代入すれば呼ばれる
+- 計算プロパティとは役割が違う (setter vs 副作用)
+
+---
+## プロパティラッパ (Property Wrappers)
+同じような(使い回すような)ロジックを1回記述し、そのコードを**複数のプロパティに対して再利用可能**にするのがプロパティラッパ。
+
+以下のようなコードがあるとする:
+```swift
+struct Game {
+    var hp: Int = 0{
+        didSet {               // 同じロジック
+            if hp < 0 {
+                hp = 0
+            }
+        }
+    }
+    var mp: Int = 0{
+        didSet {               // 同じロジック
+            if mp < 0 {
+                mp = 0
+            }
+        }
+    }
+    var stamina: Int = 0{
+        didSet {               // 同じロジック
+            if stamina < 0 {
+                stamina = 0
+            }
+        }
+    }
+}
+```
+「各パラメーターが 0 未満なら、0 に固定する」という同じ処理を行っている。  
+##### これをプロパティラッパで書く場合:
+`@propertyWrapper` をつけた構造体 (またはクラス・列挙型) を作り、中に `wrappedValue` プロパティを定義する。
+```swift
+@propertyWrapper
+struct ZeroOrMore {
+    private var number = 0
+    var wrappedValue: Int {
+        get { return number }
+        set { number = max(newValue, 0) } // 0 未満なら 0 にする
+    }
+}
+```
+これで「0以上に制限する」というロジックがひとつにまとまった。
+##### プロパティラッパの使い方:
+プロパティの前に `@ラッパ名` を付けるだけ
+```swift
+Struct Game {
+    @ZeroOrMore var hp: Int
+    @ZeroOrMore var mp: Int
+    @ZeroOrMore var stamina: Int
+}
+
+var game = Game()
+game.hp = 100
+print(game.hp) // 100
+
+game.hp = -50
+print(game.hp) // 0 (0 未満は 0 に補正される)
+```
+
+##### 裏で何が起きているか:
+`@ZeroOrMore bar hp: Int` と書くと、コンパイラが裏でこのようなコードを生成している
+```swift
+struct Game {
+    private var _hp = ZeroOrMore()          // ラッパのインスタンスを保持
+    var hp: Int {
+        get { return _hp.wrappedValue }     // 読む時はラッパ経由
+        set { _hp.wrappedValue = newValue } // 書く時もラッパ経由
+    }
+}
+```
+つまり、`@ZeroOrMore` は**シンタックスシュガー**で手で書くこともできるが、単に `@` を付けた方が圧倒的に楽だし読みやすい。
+```
+プロパティラッパ       コンパイラが裏で生成するコード
+─────────────       ──────────────────────
+@ZeroOrMore         private var _hp = ZeroOrMore()
+var hp: Int    →    var hp: Int {
+                        get { _hp.wrappedValue }
+                        set { _hp.wrappedValue = newValue }
+                    }
+```
+
+---
+例2)
+```swift
+@propertyWrapper
+struct TwelveOrLess {
+    private var number = 0
+    var wrappedValue: Int {
+        get { return number }
+        set { number = min(newValue, 12) }  // 12 を超えたら 12 にする
+    }
+}
+
+struct SmallRectangle {
+    @TwelveOrLess var height: Int
+    @TwelveOrLess var width: Int
+}
+
+var rect = SmallRectangle()
+rect.height = 10
+print(rect.height)    // 10 (12以下なのでそのまま)
+
+rect.height = 24
+print(rect.height)    // 12 (12に制限された)
+```
+
+## ラップされたプロパティの初期値の設定
+上記例2の `TwelveOrLess` には問題がある。初期値が `number = 0` で固定されていて、**使う側から初期値や上限を変えることができない**。
+
+これを解決するために、ラッパに**イニシャライザを追加**する:
+##### SmallNumber - 柔軟なバージョン
+```swift
+@propertyWrapper
+struct SmallNumber {
+    private var maximum: Int
+    private var number: Int
+
+    var wrappedValue: Int {
+        get { return number }
+        set { number = min(newValue, maximum) }
+    }
+    // ① 引数なし: デフォルト値で初期化
+    init() {
+        maximum = 12
+        number = 0
+    }
+    // ② wrappedValue だけ指定
+    init(wrappedValue: Int) {
+        maximum = 12
+        number = min(wrappedValue, maximum)
+    }
+    // ③ wrappedValue と maximum を両方指定
+    init(wrappedValue: Int, maximum: Int) {
+        self.maximum = maximum
+        number = min(wrappedValue, maximum)
+    }
+}
+```
+この例では3つのイニシャライザがあり、**使い方によって自動的に選ばれる**。
+
+---
+##### どのイニシャライザが呼ばれるか
+```swift
+// ① init() が呼ばれる - 初期値を指定しない場合
+struct ZeroRectangle {
+    @SmallNumber var height: Int     // SmallNumber()
+    @SmallNumber var width: Int      // SmallNumber()
+}
+var zero = ZeroRectangle()
+print(zero.height, zero.width)      // 0 0
+```
+
+```swift
+// ② init(wrappedValue:) が呼ばれる - = で初期値を書いた場合
+struct UnitRectangle {
+    @SmallNumber var height: Int = 1 // SmallNumber(wrappedValue: 1)
+    @SmallNumber var width: Int = 1  // SmallNumber(wrappedValue: 1)
+}
+var unit = UnitRectangle()
+print(unit.height, unit.width)      // 1 1
+```
+
+```swift
+// ③ init(wrappedValue: maximum:) が呼ばれる - 括弧で引数を書いた場合
+struct NarrowRectangle {
+    @SmallNumber(wrappedValue: 2, maximum: 5) var height: Int
+    @SmallNumber(wrappedValue: 3, maximum: 4) var width: Int
+}
+var narrow = NarrowRectangle()
+print(narrow.height, narrow.width)  // 2 3
+
+narrow.height = 100
+narrow.width = 100
+print(narrow.height, narrow.width)    // 5 4
+```
+
+```swift
+// ③の別の書き方 — = と括弧を組み合わせる
+struct MixedRectangle {
+    @SmallNumber var height: Int = 1              // init(wrappedValue: 1)
+    @SmallNumber(maximum: 9) var width: Int = 2
+    // init(wrappedValue: 2, maximum: 9)
+}
+```
+
+書き方のまとめ:
+```
+書き方                                      呼ばれるイニシャライザ
+─────────────────────────────────         ──────────────────────
+@SmallNumber var x: Int                    init()
+@SmallNumber var x: Int = 5                init(wrappedValue: 5)
+@SmallNumber(wrappedValue: 5, maximum: 8)  init(wrappedValue: 5, maximum: 8)
+@SmallNumber(maximum: 8) var x: Int = 5    init(wrappedValue: 5, maximum: 8)
+```
+
+---
+##### projectedValue (`$` でアクセスする値)
+プロパティラッパは `wrappedValue` の他に、`projectedValue` というおまけの値を公開できる。アクセスする時は `$プロパティ名` で使う。
+
+どういう時に使うか: 例えば「値が上限で補正されたかどうか」を知りたい場合
+```swift
+@propertyWrapper
+struct SmallNumber {
+    private var number = 0
+    var projectedValue = false    // ← 補正されたかどうかのフラグ
+
+    init() {}  // private var number があるため明示的に定義
+
+    var wrappedValue: Int {
+        get { return number }
+        set {
+            if newValue > 12 {
+                number = 12
+                projectedValue = true   // 補正が発生した
+            } else {
+                number = newValue
+                projectedValue = false  // 補正なし
+            }
+        }
+    }
+}
+```
+
+##### 使い方:
+```swift
+struct SomeStructure {
+    @SmallNumber var someNumber: Int
+}
+var s = SomeStructure()
+
+s.someNumber = 4
+print(s.someNumber)     // 4     ← wrappedValue (普通の値)
+print(s.$someNumber)    // false ← projectedValue (補正されてない)
+
+s.someNumber = 55
+print(s.someNumber)     // 12    ← 12に補正された
+print(s.$someNumber)    // true  ← 補正が発生した
+```
+
+```
+アクセス方法          何が返るか
+──────────         ─────────────
+s.someNumber       wrappedValue (ラップされた値そのもの)
+s.$someNumber      projectedValue (おまけの追加情報)
+```
+
+##### 型の中からアクセスする場合
+メソッドの中では `self.` を省略して `$height` のように書ける:
+```swift
+struct SizeRectangle {
+    @SmallNumber var height: Int
+    @SmallNumber var width: Int
+
+    mutating func resize(to size: String) -> Bool {
+        switch size {
+            case "small":
+                height = 10
+                width = 20
+            case "large":
+                height = 100
+                width = 100
+            default:
+                break
+        }
+        return $height || $width // どちらかが補正されたら true
+    }
+}
+```
+
+---
+##### projectedValue のポイント
+- `projectedValue` は**任意の型**を返せる (`Bool`、独自の型、`self`自身すら可能)
+- 必須ではない。定義しなくても `wrappedValue` だけで十分なら不要
+- `$` で始まるプロパティは自分で定義できないので、名前が衝突する心配はない
+
+---
+##### プロパティラッパ全体のまとめ:
+```
+プロパティラッパ
+├── @propertyWrapper をつけた型を定義
+├── wrappedValue (必須) ── getter/setter のロジックをまとめる
+├── イニシャライザ ── 初期値や設定を柔軟に受け取れる
+└── projectedValue (任意) ── $ でアクセスする追加情報
+```
+
+
+## グローバル変数とローカル変数 (Global and Local Variables)
+計算プロパティ、プロパティオブザーバ、プロパティラッパは、**普通の変数にも使うことができる**。
+
+##### グローバル変数とローカル変数の違い
+```swift
+// グローバル変数: 関数や型の外で定義
+var globalCount = 0
+
+func someFunction() {
+    // ローカル変数: 半数やメソッドの中で定義
+    var localCount = 0
+}
+```
+
+##### 計算変数
+変数にも getter / setter を定義できる:
+```swift
+var 税抜き価格 = 1000
+var 税込み価格: Int {
+    get { 税抜き価格 * 110 / 100 }
+    set { 税込み価格 * 100 / 110 }
+}
+print(税込み価格) // 1100
+税込み価格 = 2200
+print(税抜き価格) // 2000
+```
+プロパティの時と全く同じ書き方
+
+##### 格納変数にオブザーバ
+```swift
+var 歩数: Int = 0 {
+    didSet {
+        print("歩数が \(oldValue) から \(歩数) に変わりました")
+    }
+}
+歩数 = 100 // 歩数が 0 から 100 に変わりました
+```
+
+##### ローカル変数にプロパティラッパ
+```swift
+func someFunction() {
+    @SmallNumber var myNumber: Int = 0
+    
+    myNumber = 10
+    print(myNumber) // 10
+    
+    myNumber = 24
+    print(myNumber) // 12 (制限が効く)
+}
+```
+##### 制限事項
+プロパティラッパが使えるのは:
+- ローカル変数 → **OK**
+- グローバル変数 → **NG**
+- 計算変数 → **NG**
+
+##### グローバル変数の遅延初期化
+**グローバル変数は自動的に遅延初期化される**(`lazy` を付けなくても最初のアクセス時に初期化される)。しかもスレッドセーフが保証される。  
+ローカル変数は遅延しない。
+```
+                    遅延初期化      lazy が必要か    スレッドセーフ
+──────────         ──────────     ────────────    ────────────
+グローバル変数       自動で遅延      不要             保証される
+lazy プロパティ     遅延する        必要             保証されない
+ローカル変数        遅延しない      —               —
+```
+
+
+## 型プロパティ (Type Properties)
+これまでのプロパティはすべて**インスタンスプロパティ**であった。インスタンスを作るたびに、それぞれが自分の値を持つ。
+```swift
+struct Player {
+    var name: String
+}
+
+var player1 = Player(name: "ケン")
+var player2 = Player(name: "戌咬音")
+// player1.name と player2.name は別々の値
+```
+型プロパティはその逆で、**型そのものに1つだけ存在する**プロパティである。  
+何個インスタンスを作っても、全員で共有する。
+
+---
+基本の書き方: `static`
+```swift
+struct Game {
+    static var playerCount = 0 // 型プロパティ (全インスタンス共有)
+    var name: String           // インスタンスプロパティ (各自で持つ)
+}
+```
+
+```
+          Game という「型」
+          ┌─────────────────┐
+          │ playerCount = 0 │ ← 型プロパティ（1つだけ）
+          └─────────────────┘
+           /        |        \
+     インスタンス  インスタンス  インスタンス
+     ┌──────┐   ┌───────┐   ┌──────┐
+     │name: │   │name:  │   │name: │  ← それぞれ別の値
+     │"ケン" │   │"戌咬音"│   │"モブ" │
+     └──────┘   └───────┘   └──────┘
+```
+
+アクセスのやり方
+型プロパティは**インスタンスではなく型名でアクセス**する:
+```swift
+// 型プロパティ → 型名.インスタンス名
+Game.playerCount = 3
+print(Game.playerCount) // 3
+
+// インスタンスプロパティ → インスタンス.プロパティ名
+var game = Game(name: "ケン")
+print(game.name)       // ケン
+// game.playerCount       エラー: 型プロパティにインスタンスからはアクセスできない
+```
+
+---
+どういう時に使うか？
+→ **全インスタンスで共通の値**を持ちたい時
+```swift
+struct AudioChannel {
+    static let しきい値 = 10         // 全チャンネル共通の値
+    static var 全チャンネル最大値 = 0  // 全チャンネルで一番大きかった値
+    var 現在のレベル: Int = 0         // 各チャンネルごとの値
+}
+```
+上記はプロパティオブザーバのときの例である。  
+`しきい値`と`全チャンネル最大値`は全インスタンスで共有、`現在のレベル`は各インスタンスごとに持つ。
+
+---
+##### 格納型プロパティと計算型プロパティ
+インスタンスプロパティと同じで、型プロパティにも「格納」と「計算」がある:
+```swift
+struct SomeStructure {
+    static var storedTypeProperty = "Some value." // 格納型プロパティ
+    static var computedTypeProperty: Int {        // 計算型プロパティ
+        return 1
+    }
+}
+```
+列挙型でも使える:
+```swift
+enum SomeEnumeration {
+    static var storedTypeProperty = "Some value."
+    static var computedTypeProperty: Int {
+        return 6
+    }
+}
+```
+---
+##### クラスでの特別な書き方: `class`キーワード
+クラスの場合、`static` の代わりに **`class`** を使うと、サブクラスでオーバーライドできるようになる:
+```swift
+class SomeClass {
+    static var storedTypeProperty = "Some value."
+    
+    static var computedTypeProperty: Int {     // オーバーライド不可
+        return 27
+    }
+    
+    class var overrideableProperty: Int {     // オーバーライド可能
+        return 107
+    }
+}
+```
+
+```
+キーワード    使える場所                オーバーライド
+─────────   ────────────            ────────────
+static      構造体・列挙型・クラス      不可
+class       クラスのみ                可能
+```
+`class` キーワードは**計算型プロパティにだけ**使える。格納型プロパティには使えない。
+
+---
+##### 格納型プロパティの制約
+格納型プロパティには**必ずデフォルト値が必要**になる。  
+理由はシンプルで、型にはイニシャライザがないので、「初期化時に値をセットする」タイミングが存在しない。
+```swift
+struct Config {
+    static var maxRetries = 3    // OK: デフォルト値あり
+ // static var timeout: Int      // エラー: デフォルト値がない
+}
+```
+格納型プロパティは**自動的に遅延初期化**される。(グローバル変数と同じ)  
+しかも、複数スレッドから同時にアクセスされても1回だけ初期化されることが保証されている。`lazy` を付ける必要はない。
+
+---
+##### 実践例: AudioChannel
+プロパティオブザーバの時にやった例を改めて整理する:
+```swift
+struct AudioChannel {
+    static let thresholdLevel = 10
+    static var maxInputLevelForAllChannels = 0
+    var currentLevel: Int = 0 {
+        didSet {
+            if currentLevel > AudioChannel.thresholdLevel {
+                // 新しいオーディオレベルをしきい値レベルに制限する
+                currentLevel = AudioChannel.thresholdLevel
+            }
+            if currentLevel > AudioChannel.maxInputLevelForAllChannels {
+                // これを新しい全体の最大入力レベルとして保存する
+                AudioChannel.maxInputLevelForAllChannels = currentLevel
+            }
+        }
+    }
+}
+
+var left = AudioChannel()
+var right = AudioChannel()
+
+left.currentLevel = 7
+print(AudioChannel.maxInputLevelForAllChannels) // 7
+
+right.currentLevel = 11
+print(right.currentLevel)                       // 10 (しきい値で制限)
+print(AudioChannel.maxInputLevelForAllChannels) // 10
+```
+
+ポイントは、`didSet` の中で型プロパティにアクセスする時に **`AudioChannel.maxInputLevelForAllChannels`** と型名を書いているところ。  
+型プロパティは必ず型名経由でアクセスする。
+
+### まとめ
+```
+                    インスタンスプロパティ     型プロパティ
+─────────────      ──────────────────     ──────────────
+所属先              各インスタンス            型そのもの
+アクセス方法         インスタンス.プロパティ    型名.プロパティ
+キーワード           なし                    static / class
+インスタンスごとに別？  別                     全員で共有 (1つだけ)
+デフォルト値          任意                    必須 (格納型の場合)
+遅延初期化           lazy が必要              自動 (lazy 不要)
+```
