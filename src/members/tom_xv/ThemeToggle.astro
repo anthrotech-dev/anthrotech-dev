@@ -1,0 +1,192 @@
+---
+---
+
+<button id="tom-theme-toggle" aria-label="ダーク/ライト切替" title="テーマ切替">
+  🌙
+</button>
+
+<style>
+  #tom-theme-toggle {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    border: 1px solid #c4b5fd;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(109, 77, 193, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 200;
+  }
+
+  #tom-theme-toggle:hover {
+    transform: scale(1.12) rotate(15deg);
+    box-shadow: 0 4px 16px rgba(109, 77, 193, 0.35);
+  }
+
+  /* ===== DARK MODE OVERRIDES ===== */
+
+  :global(html.dark-tom) {
+    background-color: #0d0d1a !important;
+  }
+
+  :global(html.dark-tom *) {
+    color: #d4d4e8;
+  }
+
+  :global(html.dark-tom body),
+  :global(html.dark-tom #main),
+  :global(html.dark-tom #sidebar),
+  :global(html.dark-tom #wrap) {
+    background-color: #0d0d1a;
+  }
+
+  :global(html.dark-tom article) {
+    background-color: #13132a;
+    border-color: #2a2a45;
+  }
+
+  :global(html.dark-tom article a) {
+    color: #818cf8 !important;
+  }
+
+  :global(html.dark-tom pre) {
+    background-color: #1a1a30 !important;
+  }
+
+  :global(html.dark-tom h1),
+  :global(html.dark-tom h2),
+  :global(html.dark-tom h3),
+  :global(html.dark-tom h4) {
+    color: #e2e0ff;
+  }
+
+  /* テーブル */
+  :global(html.dark-tom table) {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  :global(html.dark-tom th),
+  :global(html.dark-tom td) {
+    border: 1px solid #2a2a45;
+    padding: 0.4em 0.8em;
+    background: #13132a;
+  }
+
+  :global(html.dark-tom th) {
+    background: #1a1a30;
+  }
+
+  /* サイドバー */
+  :global(html.dark-tom #title) {
+    color: #e2e0ff !important;
+  }
+
+  :global(html.dark-tom #sidebar a) {
+    color: #a78bfa !important;
+  }
+
+  /* ProfileLinks */
+  :global(html.dark-tom .link-card) {
+    background: linear-gradient(135deg, #1e1b3a, #231b50) !important;
+    border-color: #3d2d8a !important;
+    color: #d4d4e8 !important;
+  }
+
+  :global(html.dark-tom .link-card:hover) {
+    background: linear-gradient(135deg, #2d1f6e, #3d2d8a) !important;
+    box-shadow: 0 4px 16px rgba(124, 99, 219, 0.35) !important;
+  }
+
+  :global(html.dark-tom .link-name) {
+    color: #c4b5fd !important;
+  }
+
+  :global(html.dark-tom .link-url) {
+    color: #7c6fad !important;
+  }
+
+  :global(html.dark-tom .link-arrow) {
+    color: #5c4a9e !important;
+  }
+
+  :global(html.dark-tom .section-title) {
+    color: #a78bfa !important;
+    border-bottom-color: #4c3d8a !important;
+  }
+
+  /* TranslateBot portfolio */
+  :global(html.dark-tom .tb-feature) {
+    background: #1a1a30 !important;
+    border-color: #2d2d50 !important;
+  }
+
+  :global(html.dark-tom .tb-feature-title) {
+    color: #c4b5fd !important;
+  }
+
+  :global(html.dark-tom .tb-feature-desc) {
+    color: #9090b0 !important;
+  }
+
+  :global(html.dark-tom .tb-section-title) {
+    color: #a78bfa !important;
+    border-bottom-color: #4c3d8a !important;
+  }
+
+  :global(html.dark-tom .tb-subtitle) {
+    color: #9090b0 !important;
+  }
+
+  :global(html.dark-tom .tb-badge.ts)      { background: #1e3a5f !important; color: #93c5fd !important; border-color: #2d4f7f !important; }
+  :global(html.dark-tom .tb-badge.bun)     { background: #2d1f0a !important; color: #fbbf24 !important; border-color: #4d3010 !important; }
+  :global(html.dark-tom .tb-badge.deepl)   { background: #0a1f3f !important; color: #60a5fa !important; border-color: #0f3060 !important; }
+  :global(html.dark-tom .tb-badge.redis)   { background: #3f0a0a !important; color: #fca5a5 !important; border-color: #601010 !important; }
+  :global(html.dark-tom .tb-badge.discord) { background: #1a1b4b !important; color: #a5b4fc !important; border-color: #2a2b6b !important; }
+
+  :global(html.dark-tom .tb-link-btn) {
+    background: linear-gradient(135deg, #1e1b3a, #231b50) !important;
+    border-color: #3d2d8a !important;
+    color: #c4b5fd !important;
+  }
+
+  :global(html.dark-tom .tb-link-btn:hover) {
+    background: linear-gradient(135deg, #2d1f6e, #3d2d8a) !important;
+  }
+
+  /* トグルボタン自体のダーク状態 */
+  :global(html.dark-tom) #tom-theme-toggle {
+    background: linear-gradient(135deg, #1e1b3a, #2d1f6e);
+    border-color: #4c3d8a;
+    box-shadow: 0 2px 10px rgba(138, 110, 230, 0.3);
+  }
+</style>
+
+<script>
+  const btn = document.getElementById('tom-theme-toggle');
+  if (btn) {
+    const html = document.documentElement;
+    const DARK_CLASS = 'dark-tom';
+    const STORAGE_KEY = 'tom-theme';
+
+    const apply = (dark) => {
+      html.classList.toggle(DARK_CLASS, dark);
+      btn.textContent = dark ? '☀️' : '🌙';
+    };
+
+    apply(localStorage.getItem(STORAGE_KEY) === 'dark');
+
+    btn.addEventListener('click', () => {
+      const isDark = html.classList.contains(DARK_CLASS);
+      localStorage.setItem(STORAGE_KEY, isDark ? 'light' : 'dark');
+      apply(!isDark);
+    });
+  }
+</script>
