@@ -1,0 +1,195 @@
+---
+title: Translate-Bot
+description: 国旗リアクションで自動翻訳するDiscordボット
+---
+
+<style>{`
+  .tb-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tb-subtitle {
+    font-size: 1rem;
+    color: #555;
+    margin: 0 !important;
+  }
+
+  .tb-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.4rem 0;
+  }
+
+  .tb-badge {
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .tb-badge.ts   { background: #3178c622; color: #2563b0; border: 1px solid #3178c655; }
+  .tb-badge.bun  { background: #fbf0dd;   color: #a8630a; border: 1px solid #f6c97888; }
+  .tb-badge.deepl { background: #0f2b4622; color: #0f5fb4; border: 1px solid #0f5fb455; }
+  .tb-badge.redis { background: #dc382c22; color: #b91c1c; border: 1px solid #dc382c55; }
+  .tb-badge.discord { background: #5865f222; color: #4338ca; border: 1px solid #5865f255; }
+
+  .tb-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .tb-feature {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: #f8f7ff;
+    border: 1px solid #e0d9ff;
+  }
+
+  .tb-feature-icon {
+    font-size: 1.4rem;
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .tb-feature-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #3d2d8a;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .tb-feature-desc {
+    font-size: 0.78rem;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  .tb-section-title {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #5c4a9e;
+    border-bottom: 2px solid #c4b5fd;
+    padding-bottom: 0.3rem;
+    margin: 1.5rem 0 0.75rem !important;
+  }
+
+  .tb-link-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .tb-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #c4b5fd;
+    text-decoration: none !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #3d2d8a !important;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+
+  .tb-link-btn:hover {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(109,77,193,0.18);
+  }
+`}</style>
+
+# Translate-Bot
+
+<div class="tb-hero">
+  <p class="tb-subtitle">国旗リアクションを付けるだけで、DeepL APIが即座に翻訳してDiscordにリプライするBotです。</p>
+  <div class="tb-badges">
+    <span class="tb-badge ts">TypeScript</span>
+    <span class="tb-badge bun">Bun</span>
+    <span class="tb-badge deepl">DeepL API</span>
+    <span class="tb-badge redis">Redis</span>
+    <span class="tb-badge discord">discord.js</span>
+  </div>
+</div>
+
+<p class="tb-section-title">主な機能</p>
+
+<div class="tb-features">
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🏳️</span>
+    <span class="tb-feature-title">国旗リアクションで自動翻訳</span>
+    <span class="tb-feature-desc">メッセージに国旗絵文字をリアクションするだけで対応言語へ翻訳</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🇺🇳</span>
+    <span class="tb-feature-title">国コード選択モード</span>
+    <span class="tb-feature-desc">🇺🇳リアクション後に「JP」などをリプライして任意の言語へ翻訳</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">⚡</span>
+    <span class="tb-feature-title">翻訳キャッシュ</span>
+    <span class="tb-feature-desc">同一メッセージ×言語の翻訳結果をRedisにキャッシュして高速化</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🛡️</span>
+    <span class="tb-feature-title">スパム対策</span>
+    <span class="tb-feature-desc">クールダウン機能で連続リクエストを制限</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🔀</span>
+    <span class="tb-feature-title">シャーディング対応</span>
+    <span class="tb-feature-desc">ShardingManagerによる複数サーバーへのスケールアウト</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🖱️</span>
+    <span class="tb-feature-title">右クリックメニュー</span>
+    <span class="tb-feature-desc">メッセージを右クリック → アプリ → Translate からも翻訳可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🔑</span>
+    <span class="tb-feature-title">ギルドごとのAPIトークン管理</span>
+    <span class="tb-feature-desc">/deepl-token コマンドでサーバーごとにDeepLトークンを設定可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">📊</span>
+    <span class="tb-feature-title">コンソールコマンド</span>
+    <span class="tb-feature-desc">stats / cache-clear / deepl-usage などの管理コマンドを標準入力から実行</span>
+  </div>
+</div>
+
+<p class="tb-section-title">使い方</p>
+
+1. 翻訳したいメッセージに **国旗リアクション** を付ける
+2. Botが翻訳結果をリプライで返信
+3. または右クリック → **アプリ → Translate** で翻訳先を選択
+
+<p class="tb-section-title">技術構成</p>
+
+| 項目 | 内容 |
+|---|---|
+| 言語 | TypeScript |
+| ランタイム | Bun v1.3.6+ |
+| 翻訳API | DeepL API |
+| キャッシュ | Redis |
+| Botフレームワーク | discord.js |
+| シャーディング | ShardingManager |
+
+<p class="tb-section-title">リンク</p>
+
+<div class="tb-link-row">
+  <a href="https://discord.com/oauth2/authorize?client_id=1462389120989921340" class="tb-link-btn" target="_blank" rel="noopener noreferrer">
+    🤖 Botを追加する
+  </a>
+</div>
