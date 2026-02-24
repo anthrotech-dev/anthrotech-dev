@@ -87,6 +87,9 @@ jobs:
       contents: read
       checks: read
     steps:
+
+      - uses: actions/checkout@v4
+
       - name: Wait for astro-build success (max 5 min)
         uses: actions/github-script@v7
         with:
