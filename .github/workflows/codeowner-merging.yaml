@@ -94,8 +94,7 @@ jobs:
             const targetName = 'astro-build';
             const maxAttempts = 30;        // 30 * 10s = 300s
             const intervalMs = 10_000;
-
-            // PR番号解決
+      
             let prNumber;
             if (context.eventName === 'pull_request_target') {
               prNumber = context.payload.pull_request.number;
@@ -111,45 +110,51 @@ jobs:
               core.setFailed(`Unsupported event: ${context.eventName}`);
               return;
             }
-
+      
             const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-            // head sha取得
+      
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prNumber
             });
             const headSha = pr.data.head.sha;
-
+      
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
               const checks = await github.rest.checks.listForRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: headSha,
-                filter: 'latest',
                 per_page: 100
               });
-
-              const run = checks.data.check_runs.find(r => r.name === targetName);
-
-              if (run) {
-                if (run.status === 'completed') {
-                  if (run.conclusion === 'success') {
-                    core.info(`"${targetName}" succeeded.`);
-                    return; // OK
-                  } else {
-                    core.setFailed(`"${targetName}" failed (conclusion=${run.conclusion}).`);
-                    return;
-                  }
-                }
-              }
-
-              if (attempt === maxAttempts) {
-                core.setFailed(`"${targetName}" not completed within timeout.`);
+      
+              const runs = checks.data.check_runs
+                .filter(r => r.name === targetName)
+                .sort((a, b) => new Date(b.started_at || b.created_at) - new Date(a.started_at || a.created_at));
+      
+              const meaningful = runs.find(r =>
+                r.status === 'completed' &&
+                r.conclusion &&
+                !['skipped', 'neutral'].includes(r.conclusion)
+              );
+      
+              const anySuccess = runs.some(r => r.status === 'completed' && r.conclusion === 'success');
+              if (anySuccess) {
+                core.info(`"${targetName}" succeeded (found a successful run).`);
                 return;
               }
-
+      
+              if (meaningful) {
+                core.setFailed(`"${targetName}" did not succeed (conclusion=${meaningful.conclusion}).`);
+                return;
+              }
+      
+              if (attempt === maxAttempts) {
+                const summary = runs.slice(0, 5).map(r => `${r.status}/${r.conclusion}`).join(', ');
+                core.setFailed(`"${targetName}" not completed successfully within timeout. Recent runs: ${summary}`);
+                return;
+              }
+      
               core.info(`Waiting for "${targetName}"... attempt ${attempt}/${maxAttempts}`);
               await sleep(intervalMs);
             }
