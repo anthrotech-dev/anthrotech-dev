@@ -1,10 +1,5 @@
 name: Codeowners merging
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
   pull_request_target:
     types:
       - opened
@@ -18,149 +13,14 @@ on:
       - submitted
 
 jobs:
-  build-check:
-    name: astro-build
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
-      issues: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build with Astro
-        id: build
-        run: |
-          set -o pipefail
-          pnpm build 2>&1 | tee build.log
-        continue-on-error: true
-
-      - name: Post failure to PR
-        if: steps.build.outcome == 'failure'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const log = fs.readFileSync('build.log', 'utf8');
-            const truncated = log.length > 6500 ? log.slice(-6500) : log;
-            const comment = [
-              '🚨 **Astro build failed**',
-              '',
-              '```',
-              truncated,
-              '```'
-            ].join('\n');
-            
-            github.rest.issues.createComment({
-              issue_number: context.payload.pull_request.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
-      - name: failure
-        if: steps.build.outcome == 'failure'
-        run: exit 1
-
   owner-check:
-    if: |
-      github.event_name == 'pull_request_target' ||
-      github.event_name == 'issue_comment' ||
-      github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
       contents: read
       checks: read
     steps:
-
       - uses: actions/checkout@v4
-
-      - name: Wait for astro-build success (max 5 min)
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const targetName = 'astro-build';
-            const maxAttempts = 30;        // 30 * 10s = 300s
-            const intervalMs = 10_000;
-      
-            let prNumber;
-            if (context.eventName === 'pull_request_target') {
-              prNumber = context.payload.pull_request.number;
-            } else if (context.eventName === 'pull_request_review') {
-              prNumber = context.payload.pull_request.number;
-            } else if (context.eventName === 'issue_comment') {
-              if (!context.payload.issue.pull_request) {
-                core.setFailed('Not a PR comment.');
-                return;
-              }
-              prNumber = context.payload.issue.number;
-            } else {
-              core.setFailed(`Unsupported event: ${context.eventName}`);
-              return;
-            }
-      
-            const sleep = ms => new Promise(r => setTimeout(r, ms));
-      
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
-            const headSha = pr.data.head.sha;
-      
-            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-              const checks = await github.rest.checks.listForRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: headSha,
-                per_page: 100
-              });
-      
-              const runs = checks.data.check_runs
-                .filter(r => r.name === targetName)
-                .sort((a, b) => new Date(b.started_at || b.created_at) - new Date(a.started_at || a.created_at));
-      
-              const meaningful = runs.find(r =>
-                r.status === 'completed' &&
-                r.conclusion &&
-                !['skipped', 'neutral'].includes(r.conclusion)
-              );
-      
-              const anySuccess = runs.some(r => r.status === 'completed' && r.conclusion === 'success');
-              if (anySuccess) {
-                core.info(`"${targetName}" succeeded (found a successful run).`);
-                return;
-              }
-      
-              if (meaningful) {
-                core.setFailed(`"${targetName}" did not succeed (conclusion=${meaningful.conclusion}).`);
-                return;
-              }
-      
-              if (attempt === maxAttempts) {
-                const summary = runs.slice(0, 5).map(r => `${r.status}/${r.conclusion}`).join(', ');
-                core.setFailed(`"${targetName}" not completed successfully within timeout. Recent runs: ${summary}`);
-                return;
-              }
-      
-              core.info(`Waiting for "${targetName}"... attempt ${attempt}/${maxAttempts}`);
-              await sleep(intervalMs);
-            }
 
       - uses: actions/create-github-app-token@v2
         id: app-token
