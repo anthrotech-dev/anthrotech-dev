@@ -1,0 +1,412 @@
+---
+---
+
+<div id="tom-avatar-toast" aria-hidden="true"></div>
+
+<style is:global>
+  /* アバターをクリック可能に */
+  .avatar { cursor: pointer !important; }
+
+  /* クリックカウンター */
+  #tom-click-counter {
+    font-size: 0.72rem;
+    font-family: monospace;
+    font-weight: 600;
+    color: #9c84d4;
+    letter-spacing: 0.03em;
+    margin: -12px 0 0 0;
+    padding: 0;
+    user-select: none;
+  }
+
+  html.dark-tom #tom-click-counter {
+    color: #7c6fad;
+  }
+
+  /* アバターアニメーション */
+  .avatar.tom-av-spin   { animation: tom-av-spin-kf   0.55s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .avatar.tom-av-bounce { animation: tom-av-bounce-kf 0.55s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .avatar.tom-av-shake  { animation: tom-av-shake-kf  0.50s linear both; }
+  .avatar.tom-av-squish { animation: tom-av-squish-kf 0.55s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+  @keyframes tom-av-spin-kf {
+    from { transform: rotate(0deg) scale(1);    }
+    50%  { transform: rotate(180deg) scale(1.2); }
+    to   { transform: rotate(360deg) scale(1);   }
+  }
+
+  @keyframes tom-av-bounce-kf {
+    0%   { transform: translateY(0)    scale(1);    }
+    30%  { transform: translateY(-18px) scale(0.9);  }
+    60%  { transform: translateY(-26px) scale(0.95); }
+    80%  { transform: translateY(-4px)  scale(1.06); }
+    100% { transform: translateY(0)    scale(1);    }
+  }
+
+  @keyframes tom-av-shake-kf {
+    0%,100% { transform: rotate(0deg);   }
+    20%     { transform: rotate(-15deg); }
+    40%     { transform: rotate(15deg);  }
+    60%     { transform: rotate(-10deg); }
+    80%     { transform: rotate(10deg);  }
+  }
+
+  @keyframes tom-av-squish-kf {
+    0%   { transform: scale(1); }
+    25%  { transform: scaleX(1.45) scaleY(0.62); }
+    50%  { transform: scaleX(0.62) scaleY(1.45); }
+    75%  { transform: scaleX(1.12) scaleY(0.92); }
+    100% { transform: scale(1); }
+  }
+
+  /* 絵文字フロートアニメーション */
+  @keyframes tom-av-float {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+    80%  { opacity: 0.7; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* 爆発: 画面シェイク */
+  @keyframes tom-screen-shake {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    8%   { transform: translate(-12px, -6px) rotate(-1.5deg); }
+    16%  { transform: translate(14px, 4px) rotate(1.5deg); }
+    24%  { transform: translate(-16px, 8px) rotate(-2deg); }
+    32%  { transform: translate(16px, -10px) rotate(2deg); }
+    40%  { transform: translate(-14px, 6px) rotate(-1.5deg); }
+    48%  { transform: translate(14px, -6px) rotate(1.5deg); }
+    56%  { transform: translate(-10px, 4px) rotate(-1deg); }
+    64%  { transform: translate(10px, -4px) rotate(1deg); }
+    72%  { transform: translate(-6px, 2px) rotate(-0.5deg); }
+    80%  { transform: translate(6px, -2px) rotate(0.5deg); }
+    90%  { transform: translate(-3px, 1px) rotate(0deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+
+  /* 爆発: 要素が飛ぶ用の基底 transition */
+  .tom-exploding {
+    transition:
+      transform 0.75s cubic-bezier(0.4, 0, 1, 1),
+      opacity   0.55s ease !important;
+  }
+
+  /* +1 無駄 フローティングテキスト */
+  @keyframes tom-av-plusone {
+    0%   { transform: translateX(-50%) translateY(0)    scale(0.8); opacity: 1;   }
+    40%  { transform: translateX(-50%) translateY(-22px) scale(1.1); opacity: 1;   }
+    100% { transform: translateX(-50%) translateY(-55px) scale(0.9); opacity: 0;   }
+  }
+
+  /* 爆発後: 崩壊テキストポップ */
+  @keyframes tom-kaboom-pop {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.3) rotate(5deg);  opacity: 1; }
+    100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+  }
+
+  @keyframes tom-kaboom-pulse {
+    0%, 100% { text-shadow: 0 0 20px #ff6b00, 0 0 40px #ff9500; }
+    50%       { text-shadow: 0 0 40px #ff3300, 0 0 80px #ff6b00; }
+  }
+</style>
+
+<style>
+  #tom-avatar-toast {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #5c4a9e;
+    background: rgba(237, 233, 254, 0.96);
+    border: 1px solid #c4b5fd;
+    border-radius: 12px;
+    padding: 0.45rem 1.1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+    z-index: 700;
+    white-space: nowrap;
+  }
+
+  #tom-avatar-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  :global(html.dark-tom) #tom-avatar-toast {
+    background: rgba(20, 18, 45, 0.96);
+    border-color: #4c3d8a;
+    color: #c4b5fd;
+  }
+</style>
+
+<script>
+  const avatar = document.querySelector('.avatar') as HTMLImageElement | null;
+  if (avatar) {
+    const AVATAR_KEY = 'tom-avatar-clicks';
+    const toast = document.getElementById('tom-avatar-toast');
+
+    const emojiPool = [
+      '🐺','💜','🌙','⭐','✨','🎮','💻','🍜',
+      '🎵','🔮','🌸','💎','🫧','🦊','🐱','🌟',
+      '🍙','🎲','🫀','🧊','🎀','🪐','🫐','🍡',
+    ];
+
+    const milestones: Record<number, string | null> = {
+      1:    '😮 やめてくれ',
+      5:    '😩 痛いってば！',
+      10:   '😤 もう限界…',
+      20:   '😰 鬼ですか',
+      50:   '🫡 覚悟はできている',
+      100:  '🏆 もはや達人',
+      200:  '👑 化け物め',
+      500:  '🙏 神に近い何か',
+      999:  '⚠️ あと1回…やめとけよ？',
+      1000: null, // → 爆発
+    };
+
+    let count = parseInt(localStorage.getItem(AVATAR_KEY) ?? '0', 10);
+
+    // --- クリックカウンター (h1 の下に挿入) ---
+    const memberHeader = document.querySelector('.member-header');
+    let clickCounterEl: HTMLElement | null = null;
+    if (memberHeader) {
+      clickCounterEl = document.createElement('p');
+      clickCounterEl.id = 'tom-click-counter';
+      clickCounterEl.textContent = count > 0 ? `🐾 無駄なクリック: ${count}回` : '';
+      memberHeader.insertAdjacentElement('afterend', clickCounterEl);
+    }
+
+    // --- ランダムアニメーション ---
+    const animClasses = ['tom-av-spin', 'tom-av-bounce', 'tom-av-shake', 'tom-av-squish'] as const;
+
+    function playAvatarAnim() {
+      const cls = animClasses[Math.floor(Math.random() * animClasses.length)];
+      avatar!.classList.add(cls);
+      setTimeout(() => avatar!.classList.remove(cls), 600);
+    }
+
+    // --- 絵文字バースト ---
+    function burstEmojis(x: number, y: number, amount = 9) {
+      const total = amount + Math.floor(Math.random() * 4);
+      for (let i = 0; i < total; i++) {
+        const el = document.createElement('span');
+        el.textContent = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+        const dx  = (Math.random() - 0.5) * 140;
+        const dy  = -(35 + Math.random() * 95);
+        const rot = (Math.random() - 0.5) * 420;
+        const sz  = 1 + Math.random() * 0.9;
+        const delay = i * 28;
+        el.style.cssText = [
+          'position:fixed',
+          `left:${x}px`,
+          `top:${y}px`,
+          `font-size:${sz}rem`,
+          'pointer-events:none',
+          'z-index:9999',
+          'user-select:none',
+          `animation:tom-av-float 0.9s cubic-bezier(0.4,0,0.2,1) ${delay}ms forwards`,
+          `--dx:${dx}px`,
+          `--dy:${dy}px`,
+          `--rot:${rot}deg`,
+        ].join(';');
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 970 + delay);
+      }
+    }
+
+    // --- +1 無駄 フローティングテキスト ---
+    function showPlusOne(x: number, y: number) {
+      const el = document.createElement('div');
+      el.textContent = '無駄なクリック +1';
+      el.style.cssText = [
+        'position:fixed',
+        `left:${x}px`,
+        `top:${y - 8}px`,
+        'font-size:0.82rem',
+        'font-weight:800',
+        'color:#a78bfa',
+        'text-shadow:0 0 8px rgba(167,139,250,0.6)',
+        'pointer-events:none',
+        'z-index:9999',
+        'user-select:none',
+        'white-space:nowrap',
+        'letter-spacing:0.04em',
+        'animation:tom-av-plusone 0.85s cubic-bezier(0.4,0,0.2,1) forwards',
+      ].join(';');
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+
+    // --- トースト ---
+    let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showToast(msg: string) {
+      if (!toast) return;
+      if (toastTimer) clearTimeout(toastTimer);
+      toast.textContent = msg;
+      toast.classList.add('visible');
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2800);
+    }
+
+    // ===== 爆発演出 =====
+    function triggerExplosion(cx: number, cy: number) {
+      // 連打防止: アバターを無効化
+      avatar!.style.pointerEvents = 'none';
+
+      // 1. 画面フラッシュ
+      const flash = document.createElement('div');
+      flash.style.cssText = [
+        'position:fixed', 'inset:0',
+        'background:radial-gradient(ellipse at center, #ffaa00 0%, #ff3300 60%, transparent 100%)',
+        'opacity:0.85', 'z-index:2000', 'pointer-events:none',
+        'transition:opacity 0.45s ease',
+      ].join(';');
+      document.body.appendChild(flash);
+      setTimeout(() => { flash.style.opacity = '0'; }, 80);
+      setTimeout(() => flash.remove(), 600);
+
+      // 2. 画面シェイク
+      const body = document.body as HTMLElement;
+      body.style.animation = 'tom-screen-shake 0.65s ease';
+      setTimeout(() => { body.style.animation = ''; }, 700);
+
+      // 3. 爆発絵文字を大量放出
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const jx = cx + (Math.random() - 0.5) * 200;
+          const jy = cy + (Math.random() - 0.5) * 200;
+          burstEmojis(jx, jy, 6);
+        }, i * 80);
+      }
+
+      // 4. 主要要素を吹っ飛ばす
+      const targets: Array<{ sel: string; tx: string; ty: string; rot: number; delay: number }> = [
+        { sel: '#sidebar',       tx: '-180%', ty: '-60%',  rot: -45,  delay: 80  },
+        { sel: '.member-header', tx: '0%',    ty: '-250%', rot: 25,   delay: 0   },
+        { sel: 'article',        tx: '160%',  ty: '140%',  rot: 30,   delay: 120 },
+        { sel: 'h1',             tx: '-100%', ty: '-300%', rot: -60,  delay: 40  },
+        { sel: '.link-card:nth-child(1)', tx: '-200%', ty: '100%', rot: -90, delay: 160 },
+        { sel: '.link-card:nth-child(2)', tx: '200%',  ty: '-80%', rot: 80,  delay: 200 },
+        { sel: '.link-card:nth-child(3)', tx: '-150%', ty: '200%', rot: 120, delay: 240 },
+      ];
+
+      targets.forEach(({ sel, tx, ty, rot, delay }) => {
+        const el = document.querySelector(sel) as HTMLElement | null;
+        if (!el) return;
+        el.classList.add('tom-exploding');
+        setTimeout(() => {
+          el.style.transform = `translate(${tx}, ${ty}) rotate(${rot}deg) scale(0.3)`;
+          el.style.opacity = '0';
+        }, delay + 50);
+      });
+
+      // 5. 爆発オーバーレイ表示
+      setTimeout(() => {
+        const overlay = document.createElement('div');
+        overlay.id = 'tom-kaboom-overlay';
+        overlay.style.cssText = [
+          'position:fixed', 'inset:0',
+          'background:#000',
+          'display:flex', 'flex-direction:column',
+          'align-items:center', 'justify-content:center',
+          'z-index:3000', 'opacity:0',
+          'transition:opacity 0.5s ease',
+          'font-family:monospace',
+        ].join(';');
+
+        overlay.innerHTML = `
+          <div style="font-size:5rem;animation:tom-kaboom-pop 0.6s cubic-bezier(0.4,0,0.2,1) both">💥</div>
+          <div style="
+            font-size:2.6rem;font-weight:900;
+            color:#ff6b00;margin:0.6rem 0;
+            animation:tom-kaboom-pulse 1.2s ease infinite;
+            letter-spacing:0.05em;
+          ">1000回！！！</div>
+          <div style="font-size:1rem;color:#888;margin-bottom:0.5rem">ページが崩壊しました</div>
+          <div style="font-size:0.8rem;color:#555;margin-bottom:2rem">やりましたね</div>
+          <div id="tom-kaboom-countdown" style="font-size:0.85rem;color:#666;margin-bottom:1.2rem">
+            5秒後に自動修復…
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.6rem">
+            <button id="tom-kaboom-btn" style="
+              padding:0.6rem 1.6rem;
+              background:linear-gradient(135deg,#ff6b00,#ff3300);
+              color:#fff;font-weight:700;font-size:0.95rem;
+              border:none;border-radius:10px;cursor:pointer;
+              transition:transform 0.15s ease;
+            ">今すぐ修復する</button>
+            <button id="tom-kaboom-reset-btn" style="
+              padding:0.4rem 1.2rem;
+              background:transparent;
+              color:#555;font-weight:600;font-size:0.8rem;
+              border:1px solid #333;border-radius:8px;cursor:pointer;
+              transition:transform 0.15s ease, color 0.15s ease;
+            ">🔄 カウントをリセットして修復</button>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+        });
+
+        // カウントダウン
+        let remaining = 30;
+        const countdownEl = overlay.querySelector('#tom-kaboom-countdown')!;
+        const interval = setInterval(() => {
+          remaining--;
+          countdownEl.textContent = remaining > 0
+            ? `${remaining}秒後に自動修復…`
+            : '修復中…';
+          if (remaining <= 0) {
+            clearInterval(interval);
+            location.reload();
+          }
+        }, 1000);
+
+        const repairBtn = overlay.querySelector('#tom-kaboom-btn') as HTMLButtonElement;
+        repairBtn.addEventListener('mouseenter', () => { repairBtn.style.transform = 'scale(1.06)'; });
+        repairBtn.addEventListener('mouseleave', () => { repairBtn.style.transform = 'scale(1)'; });
+        repairBtn.addEventListener('click', () => {
+          clearInterval(interval);
+          location.reload();
+        });
+
+        const resetBtn = overlay.querySelector('#tom-kaboom-reset-btn') as HTMLButtonElement;
+        resetBtn.addEventListener('mouseenter', () => { resetBtn.style.color = '#aaa'; resetBtn.style.transform = 'scale(1.04)'; });
+        resetBtn.addEventListener('mouseleave', () => { resetBtn.style.color = '#555'; resetBtn.style.transform = 'scale(1)'; });
+        resetBtn.addEventListener('click', () => {
+          clearInterval(interval);
+          localStorage.setItem(AVATAR_KEY, '0');
+          location.reload();
+        });
+      }, 650);
+    }
+
+    // --- クリックハンドラ ---
+    avatar.addEventListener('click', (e) => {
+      count++;
+      localStorage.setItem(AVATAR_KEY, String(count));
+
+      if (clickCounterEl) {
+        clickCounterEl.textContent = `🐾 無駄なクリック: ${count}回`;
+      }
+
+      if (count === 1000) {
+        triggerExplosion(e.clientX, e.clientY);
+        return;
+      }
+
+      playAvatarAnim();
+      showPlusOne(e.clientX, e.clientY);
+      burstEmojis(e.clientX, e.clientY);
+
+      const msg = milestones[count];
+      if (msg) showToast(msg);
+    });
+  }
+</script>
