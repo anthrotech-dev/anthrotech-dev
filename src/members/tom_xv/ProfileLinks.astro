@@ -1,0 +1,128 @@
+---
+const links = [
+  {
+    icon: '🪪',
+    name: '自己紹介カード',
+    url: 'https://lit.link/TomXV',
+    display: 'lit.link/TomXV',
+  },
+  {
+    icon: '🌐',
+    name: 'ウェブサイト',
+    url: 'https://mypage.x2rn.net',
+    display: 'mypage.x2rn.net',
+  },
+  {
+    icon: '✕',
+    name: 'Twitter / X',
+    url: 'https://twitter.x2rn.net',
+    display: 'twitter.x2rn.net',
+  },
+  {
+    icon: '🐙',
+    name: 'GitHub',
+    url: 'https://github.x2rn.net',
+    display: 'github.x2rn.net',
+  },
+  {
+    icon: '🌀',
+    name: 'コンカレ',
+    url: 'https://concrnt.world/lugiaxetomxv.net',
+    display: 'concrnt.world',
+  },
+];
+---
+
+<section class="links-section">
+  <h2 class="section-title">各種リンク</h2>
+  <div class="links-grid">
+    {links.map((link) => (
+      <a href={link.url} class="link-card" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">{link.icon}</span>
+        <div class="link-body">
+          <span class="link-name">{link.name}</span>
+          <span class="link-url">{link.display}</span>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .links-section {
+    margin: 0;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #5c4a9e;
+    margin: 0 0 0.9rem !important;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #c4b5fd;
+    letter-spacing: 0.03em;
+  }
+
+  .links-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #c4b5fd;
+    text-decoration: none !important;
+    color: #2d1f6e !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .link-card:hover {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    transform: translateX(6px);
+    box-shadow: 0 4px 16px rgba(109, 77, 193, 0.18);
+  }
+
+  .link-icon {
+    font-size: 1.3rem;
+    width: 2rem;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .link-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+  }
+
+  .link-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #3d2d8a;
+  }
+
+  .link-url {
+    font-size: 0.75rem;
+    color: #7c6fad;
+  }
+
+  .link-arrow {
+    font-size: 1rem;
+    color: #a79fd4;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+
+  .link-card:hover .link-arrow {
+    transform: translateX(3px);
+  }
+</style>
