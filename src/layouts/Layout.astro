@@ -25,7 +25,7 @@ const defaultDescription = 'Anthrotechは、ケモノ好き x 技術好き な�
         <meta property="og:description" content={description || defaultDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={Astro.url.href} />
-        <meta property="og:image" content={new URL(image || '/ogp.png', Astro.site).href} />
+        <meta property="og:image" content={new URL(image || '/logo.png', Astro.site).href} />
         <meta name="twitter:card" content={cardType ?? (image ? 'summary_large_image' : 'summary')} />
 	</head>
 	<body>
