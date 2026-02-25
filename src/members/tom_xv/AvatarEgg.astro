@@ -176,6 +176,8 @@
   let ruinsMode = false;
   const physicsItems: PhysicsItem[] = [];
   let rafId: number | null = null;
+  const EXPLOSION_SE_PATH = '/assets/tom_xv/explosion.mp3';
+  let explosionAudio: HTMLAudioElement | null = null;
 
   // ===== 土煙パーティクル =====
   function spawnDust(bx: number, by: number, w: number) {
@@ -642,9 +644,55 @@
     }
   }
 
+  // ===== 効果音 =====
+  function playExplosionSound() {
+    if (!explosionAudio) {
+      explosionAudio = new Audio(EXPLOSION_SE_PATH);
+      explosionAudio.preload = 'auto';
+      explosionAudio.volume = 0.88;
+    }
+
+    explosionAudio.currentTime = 0;
+    const playPromise = explosionAudio.play();
+    if (playPromise) {
+      playPromise.catch(() => playExplosionFallback());
+    }
+  }
+
+  function playExplosionFallback() {
+    const AudioCtx = window.AudioContext;
+    if (!AudioCtx) return;
+
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(44, now + 0.24);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1200, now);
+    filter.frequency.exponentialRampToValueAtTime(220, now + 0.24);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.27);
+    osc.onended = () => { void ctx.close(); };
+  }
+
   // ===== 爆発演出 =====
   function triggerExplosion(cx: number, cy: number) {
     ruinsMode = true;
+    playExplosionSound();
 
     // フラッシュ
     const flash = document.createElement('div');
