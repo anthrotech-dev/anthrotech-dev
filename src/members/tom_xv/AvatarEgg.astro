@@ -7,6 +7,17 @@
   /* アバターをクリック可能に */
   .avatar { cursor: pointer !important; }
 
+  /* 残骸アイテム: ドラッグカーソル */
+  .tom-ruins-item {
+    cursor: grab !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    touch-action: none !important;
+  }
+  .tom-ruins-item.tom-dragging {
+    cursor: grabbing !important;
+  }
+
   /* クリックカウンター */
   #tom-click-counter {
     font-size: 0.72rem;
@@ -34,15 +45,13 @@
     50%  { transform: rotate(180deg) scale(1.2); }
     to   { transform: rotate(360deg) scale(1);   }
   }
-
   @keyframes tom-av-bounce-kf {
-    0%   { transform: translateY(0)    scale(1);    }
+    0%   { transform: translateY(0)     scale(1);    }
     30%  { transform: translateY(-18px) scale(0.9);  }
     60%  { transform: translateY(-26px) scale(0.95); }
     80%  { transform: translateY(-4px)  scale(1.06); }
-    100% { transform: translateY(0)    scale(1);    }
+    100% { transform: translateY(0)     scale(1);    }
   }
-
   @keyframes tom-av-shake-kf {
     0%,100% { transform: rotate(0deg);   }
     20%     { transform: rotate(-15deg); }
@@ -50,7 +59,6 @@
     60%     { transform: rotate(-10deg); }
     80%     { transform: rotate(10deg);  }
   }
-
   @keyframes tom-av-squish-kf {
     0%   { transform: scale(1); }
     25%  { transform: scaleX(1.45) scaleY(0.62); }
@@ -66,7 +74,7 @@
     100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
   }
 
-  /* 爆発: 画面シェイク */
+  /* 画面シェイク */
   @keyframes tom-screen-shake {
     0%   { transform: translate(0, 0) rotate(0deg); }
     8%   { transform: translate(-12px, -6px) rotate(-1.5deg); }
@@ -83,27 +91,25 @@
     100% { transform: translate(0, 0) rotate(0deg); }
   }
 
-  /* 爆発: 要素が飛ぶ用の基底 transition */
-  .tom-exploding {
-    transition:
-      transform 0.75s cubic-bezier(0.4, 0, 1, 1),
-      opacity   0.55s ease !important;
+  /* 土煙パーティクル */
+  @keyframes tom-dust {
+    0%   { transform: translate(0, 0) scale(1); opacity: 0.65; }
+    100% { transform: translate(var(--dx), -32px) scale(0.15); opacity: 0; }
   }
 
-  /* +1 無駄 フローティングテキスト */
+  /* +1 フローティングテキスト */
   @keyframes tom-av-plusone {
-    0%   { transform: translateX(-50%) translateY(0)    scale(0.8); opacity: 1;   }
-    40%  { transform: translateX(-50%) translateY(-22px) scale(1.1); opacity: 1;   }
-    100% { transform: translateX(-50%) translateY(-55px) scale(0.9); opacity: 0;   }
+    0%   { transform: translateX(-50%) translateY(0)     scale(0.8); opacity: 1; }
+    40%  { transform: translateX(-50%) translateY(-22px) scale(1.1); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-55px) scale(0.9); opacity: 0; }
   }
 
-  /* 爆発後: 崩壊テキストポップ */
+  /* 崩壊テキストアニメーション */
   @keyframes tom-kaboom-pop {
     0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
     60%  { transform: scale(1.3) rotate(5deg);  opacity: 1; }
     100% { transform: scale(1) rotate(0deg);    opacity: 1; }
   }
-
   @keyframes tom-kaboom-pulse {
     0%, 100% { text-shadow: 0 0 20px #ff6b00, 0 0 40px #ff9500; }
     50%       { text-shadow: 0 0 40px #ff3300, 0 0 80px #ff6b00; }
@@ -130,12 +136,10 @@
     z-index: 700;
     white-space: nowrap;
   }
-
   #tom-avatar-toast.visible {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
-
   :global(html.dark-tom) #tom-avatar-toast {
     background: rgba(20, 18, 45, 0.96);
     border-color: #4c3d8a;
@@ -144,17 +148,637 @@
 </style>
 
 <script>
+  // ===== 定数 =====
+  const AVATAR_KEY   = 'tom-avatar-clicks';
+  const GRAVITY      = 0.38;
+  const BOUNCE_COEF  = 0.30;
+  const FLOOR_MARGIN = 45;
+
+  // ===== 型定義 =====
+  interface PhysicsItem {
+    el:       HTMLElement;
+    ox: number; oy: number;   // position: fixed での固定起点
+    x:  number; y:  number;   // 現在位置 (topLeft)
+    vx: number; vy: number;
+    rot:  number; vrot: number;
+    w: number; h: number;
+    floor:    number;
+    settled:  boolean;
+    bounces:  number;
+    dusted:   boolean;
+    dragging: boolean;
+    dragOx:   number; dragOy: number;
+    lastPos:  Array<{ x: number; y: number; t: number }>;
+  }
+
+  // ===== グローバル状態 =====
+  let count     = parseInt(localStorage.getItem(AVATAR_KEY) ?? '0', 10);
+  let ruinsMode = false;
+  const physicsItems: PhysicsItem[] = [];
+  let rafId: number | null = null;
+
+  // ===== 土煙パーティクル =====
+  function spawnDust(bx: number, by: number, w: number) {
+    const n = 7 + Math.floor(Math.random() * 5);
+    for (let d = 0; d < n; d++) {
+      const p  = document.createElement('div');
+      const px = bx + w * 0.05 + Math.random() * w * 0.9;
+      const dx = (Math.random() - 0.5) * w * 0.7;
+      const sz = 5 + Math.random() * 8;
+      const dl = d * 38;
+      p.style.cssText = [
+        'position:fixed',
+        `left:${px}px`, `top:${by}px`,
+        `width:${sz}px`, `height:${sz}px`,
+        'border-radius:50%',
+        'background:rgba(155,140,105,0.55)',
+        'pointer-events:none', 'z-index:1700',
+        `--dx:${dx}px`,
+        `animation:tom-dust 0.9s ease-out ${dl}ms forwards`,
+      ].join(';');
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 960 + dl);
+    }
+  }
+
+  // ===== 物理エンジン =====
+  function resumePhysics() {
+    if (rafId === null) {
+      rafId = requestAnimationFrame(physicsTick);
+    }
+  }
+
+  function physicsTick() {
+    const W = window.innerWidth;
+
+    for (const item of physicsItems) {
+      // ドラッグ中: 位置は pointermove が更新済み、transform だけ適用
+      if (item.dragging) {
+        item.el.style.transform =
+          `translate(${item.x - item.ox}px,${item.y - item.oy}px) rotate(${item.rot}deg) scale(1.06)`;
+        continue;
+      }
+      if (item.settled) continue;
+
+      // 物理更新
+      item.vy   += GRAVITY;
+      item.x    += item.vx;
+      item.y    += item.vy;
+      item.rot  += item.vrot;
+      item.vx   *= 0.993;
+      item.vrot *= 0.96;
+
+      // 壁バウンス
+      if (item.x < 0) {
+        item.x  = 0;
+        item.vx = Math.abs(item.vx) * 0.45;
+        item.vrot *= -0.6;
+      } else if (item.x + item.w > W) {
+        item.x  = W - item.w;
+        item.vx = -Math.abs(item.vx) * 0.45;
+        item.vrot *= -0.6;
+      }
+
+      // 天井バウンス
+      if (item.y < 0) {
+        item.y  = 0;
+        item.vy = Math.abs(item.vy) * 0.3;
+      }
+
+      // 床との衝突
+      if (item.y >= item.floor) {
+        item.y    = item.floor;
+        item.vy   = -item.vy * BOUNCE_COEF;
+        item.vrot *= 0.52;
+        item.bounces++;
+
+        // 初着地で土煙
+        if (!item.dusted) {
+          item.dusted = true;
+          spawnDust(item.x, item.y + item.h, item.w);
+        }
+
+        // 静止判定
+        if (Math.abs(item.vy) < 0.85 || item.bounces >= 4) {
+          item.settled = true;
+          const sign   = item.vrot !== 0 ? Math.sign(item.vrot) : (Math.random() < 0.5 ? 1 : -1);
+          item.rot     = sign * (8 + Math.random() * 22);
+          item.el.style.transform =
+            `translate(${item.x - item.ox}px,${item.y - item.oy}px) rotate(${item.rot}deg)`;
+          item.el.style.opacity = '0.65';
+          item.el.style.filter  = 'brightness(0.6) sepia(0.25) saturate(0.8)';
+          continue;
+        }
+      }
+
+      item.el.style.transform =
+        `translate(${item.x - item.ox}px,${item.y - item.oy}px) rotate(${item.rot}deg)`;
+    }
+
+    const anyActive = physicsItems.some(i => !i.settled || i.dragging);
+    if (anyActive) {
+      rafId = requestAnimationFrame(physicsTick);
+    } else {
+      rafId = null;
+    }
+  }
+
+  // ===== ドラッグ機能 =====
+  function makeDraggable(item: PhysicsItem) {
+    item.el.classList.add('tom-ruins-item');
+
+    // ネイティブブラウザのドラッグを無効化 (img / a などのデフォルト動作)
+    item.el.addEventListener('dragstart', (e) => e.preventDefault());
+
+    let dragMoved       = false;
+    let pendingDrag     = false; // pointerdown 後、まだ drag 開始前
+    let pendingPtrId    = -1;    // setPointerCapture 用に pointerId を保存
+
+    item.el.addEventListener('pointerdown', (e) => {
+      // setPointerCapture はここでは呼ばない:
+      // pointerdown 時点で capture すると pointerup/click が <a> ではなく
+      // このコンテナ要素に向けられ、リンクナビゲーションが発生しなくなる
+      pendingDrag   = true;
+      dragMoved     = false;
+      pendingPtrId  = e.pointerId;
+      item.dragOx   = e.clientX - item.x;
+      item.dragOy   = e.clientY - item.y;
+      item.lastPos  = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+    });
+
+    item.el.addEventListener('pointermove', (e) => {
+      if (!pendingDrag) return;
+      const first = item.lastPos[0];
+      // 移動しきい値を超えたら drag 開始
+      if (first && (Math.abs(e.clientX - first.x) > 4 || Math.abs(e.clientY - first.y) > 4)) {
+        dragMoved = true;
+        if (!item.dragging) {
+          // ドラッグ確定: ここで初めて capture → click は既に発生しないタイミング
+          item.el.setPointerCapture(pendingPtrId);
+          item.dragging = true;
+          item.settled  = false;
+          item.vx = 0; item.vy = 0; item.vrot = 0;
+          item.el.classList.add('tom-dragging');
+          item.el.style.opacity = '0.9';
+          item.el.style.filter  = 'brightness(0.95) drop-shadow(0 12px 24px rgba(0,0,0,0.7))';
+          item.el.style.zIndex  = '2000';
+          resumePhysics();
+        }
+      }
+      if (!item.dragging) return;
+      const prev = item.lastPos.at(-1);
+      if (prev) {
+        const dv  = e.clientX - prev.x;
+        item.rot  = item.rot * 0.82 + dv * 0.55;
+      }
+      item.x = e.clientX - item.dragOx;
+      item.y = e.clientY - item.dragOy;
+      item.lastPos.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+      if (item.lastPos.length > 8) item.lastPos.shift();
+    });
+
+    item.el.addEventListener('pointercancel', () => {
+      pendingDrag = false;
+      if (!item.dragging) return;
+      item.dragging = false;
+      item.el.classList.remove('tom-dragging');
+      item.el.style.zIndex   = `${1600 - physicsItems.indexOf(item) * 5}`;
+      item.el.style.opacity  = '1';
+      item.el.style.filter   = '';
+      item.vx = 0; item.vy = 0; item.vrot = 0;
+    });
+
+    item.el.addEventListener('pointerup', () => {
+      if (!pendingDrag) return;
+      pendingDrag = false;
+
+      if (!item.dragging) {
+        // 動かずに離した = 単なるクリック: 何もしない (click イベントが続けて発火する)
+        item.lastPos = [];
+        return;
+      }
+
+      item.dragging = false;
+      item.el.classList.remove('tom-dragging');
+      item.el.style.zIndex = `${1600 - physicsItems.indexOf(item) * 5}`;
+      item.el.style.opacity = '1';
+      item.el.style.filter  = '';
+
+      // 投げた速度を計算
+      if (item.lastPos.length >= 2) {
+        const recent = item.lastPos.slice(-5);
+        const dt     = Math.max(8, recent.at(-1)!.t - recent[0].t);
+        const dx     = recent.at(-1)!.x - recent[0].x;
+        const dy     = recent.at(-1)!.y - recent[0].y;
+        const scale  = 14 / dt;
+        item.vx   = dx * scale;
+        item.vy   = dy * scale;
+        item.vrot = item.vx * 0.28;
+      }
+
+      item.bounces = 0;
+      item.dusted  = true;
+
+      // ドラッグ移動があった場合、直後の click イベントを1回だけブロック
+      if (dragMoved) {
+        const stopClick = (e: MouseEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          item.el.removeEventListener('click', stopClick, true);
+        };
+        item.el.addEventListener('click', stopClick, true);
+        dragMoved = false;
+      }
+
+      resumePhysics();
+    });
+  }
+
+  // ===== position:fixed な子要素を body 直下に移動 =====
+  // (transform コンテキストの影響を受けないようにする)
+  function extractFixedChildren() {
+    ['tom-avatar-toast', 'tom-theme-toggle', 'tom-theme-overlay'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) document.body.appendChild(el);
+    });
+  }
+
+  // ===== 物理化する要素を収集 (コンテナの子要素レベルで収集) =====
+  function gatherPhysicsElements(): HTMLElement[] {
+    const excludeIds = new Set(['tom-avatar-toast', 'tom-theme-overlay']);
+    const out: HTMLElement[] = [];
+
+    function addChildren(parentSel: string) {
+      const parent = document.querySelector(parentSel);
+      if (!parent) return;
+      for (const child of Array.from(parent.children)) {
+        if (!(child instanceof HTMLElement)) continue;
+        if (excludeIds.has(child.id)) continue;
+        const rect = child.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) continue;
+        out.push(child);
+      }
+    }
+
+    function addOne(sel: string) {
+      const el = document.querySelector(sel) as HTMLElement | null;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return;
+      out.push(el);
+    }
+
+    // article 直下の要素を収集。
+    // display:grid / flex で子要素が 2 個以上あるコンテナはその子要素に分解し
+    // リンクカードや機能カードを個別の物理アイテムにする
+    function addArticleGranular() {
+      const article = document.querySelector('article');
+      if (!article) return;
+      for (const child of Array.from(article.children)) {
+        if (!(child instanceof HTMLElement)) continue;
+        if (excludeIds.has(child.id)) continue;
+        const rect = child.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) continue;
+
+        const display = window.getComputedStyle(child).display;
+        const isMultiCell = display.includes('grid') || display === 'flex' || display === 'inline-flex';
+        const kids = Array.from(child.children).filter(c => {
+          const r = (c as HTMLElement).getBoundingClientRect();
+          return r.width > 0 && r.height > 0;
+        });
+
+        // コンテナで子が 2 個以上 → 子を個別に収集
+        if (isMultiCell && kids.length >= 2) {
+          for (const kid of kids) out.push(kid as HTMLElement);
+        } else {
+          out.push(child);
+        }
+      }
+    }
+
+    // サイドバーも 1 段深く: nav 直下のリスト項目まで分解
+    function addSidebarGranular() {
+      const sidebar = document.querySelector('#sidebar');
+      if (!sidebar) return;
+      for (const child of Array.from(sidebar.children)) {
+        if (!(child instanceof HTMLElement)) continue;
+        const rect = child.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) continue;
+        const tag = child.tagName.toLowerCase();
+        // nav / ul / ol はその子要素 (li / a) を個別収集
+        if (tag === 'nav' || tag === 'ul' || tag === 'ol') {
+          for (const kid of Array.from(child.children)) {
+            if (!(kid instanceof HTMLElement)) continue;
+            const kr = kid.getBoundingClientRect();
+            if (kr.width === 0 && kr.height === 0) continue;
+            out.push(kid);
+          }
+        } else {
+          out.push(child);
+        }
+      }
+    }
+
+    addSidebarGranular();            // サイドバー (nav 内を分解)
+    addChildren('.member-header');   // アバター画像・名前
+    addOne('#tom-click-counter');    // クリックカウンター
+    addArticleGranular();            // article 内: グリッド系コンテナを子要素に展開
+    addOne('#tom-theme-toggle');     // テーマトグルボタン
+
+    return out;
+  }
+
+  // ===== 物理要素をセットアップ =====
+  function setupPhysicsElements(cx: number, cy: number, isExplosion: boolean) {
+    extractFixedChildren();
+
+    const elements   = gatherPhysicsElements();
+    const BASE_FLOOR = window.innerHeight - FLOOR_MARGIN;
+    // 先に全要素の rect を一括収集: 1つを fixed にするたびにフローが崩れて
+    // 後続要素の getBoundingClientRect() がずれるのを防ぐ
+    const rects = elements.map(el => el.getBoundingClientRect());
+
+    elements.forEach((el, i) => {
+      const rect = rects[i];
+
+      let vx: number, vy: number, vrot: number;
+      if (isExplosion) {
+        const dx       = (rect.left + rect.width  / 2) - cx;
+        const dy       = (rect.top  + rect.height / 2) - cy;
+        const dist     = Math.sqrt(dx * dx + dy * dy) || 1;
+        const lateralS = 1.0 + Math.random() * 3.5;
+        vx   = (dx / dist) * lateralS + (Math.random() - 0.5) * 3;
+        vy   = -(3 + Math.random() * 7);
+        vrot = (Math.random() - 0.5) * 18;
+      } else {
+        // 固定モード: 掴むまで静止
+        vx = 0; vy = 0; vrot = 0;
+      }
+
+      // 要素ごとに着地レベルを微妙にずらして積み重なり感を出す
+      const floor = BASE_FLOOR - rect.height + (i % 4) * 8 + Math.random() * 10;
+
+      el.style.position      = 'fixed';
+      el.style.left          = `${rect.left}px`;
+      el.style.top           = `${rect.top}px`;
+      el.style.width         = `${rect.width}px`;
+      el.style.height        = `${rect.height}px`;
+      el.style.margin        = '0';
+      el.style.zIndex        = `${1600 - i * 5}`;
+      el.style.transition    = 'none';
+      el.style.pointerEvents = 'auto';
+      el.style.overflow      = 'hidden';
+      el.style.boxSizing     = 'border-box';
+      // 親の visibility:hidden 継承を上書き
+      el.style.visibility    = 'visible';
+
+      const item: PhysicsItem = {
+        el,
+        ox: rect.left, oy: rect.top,
+        x:  rect.left, y:  rect.top,
+        vx, vy, rot: 0, vrot,
+        w: rect.width, h: rect.height,
+        floor,
+        settled:  !isExplosion,
+        bounces:  0,
+        dusted:   false,
+        dragging: false,
+        dragOx:   0, dragOy: 0,
+        lastPos:  [],
+      };
+
+      physicsItems.push(item);
+      makeDraggable(item);
+    });
+
+    // #main の高さを保存してから非表示: これでブラウザ本来のスクロールが生きる
+    // (全要素が position:fixed になるとドキュメント高さがゼロになるため)
+    const mainEl = document.getElementById('main');
+    if (mainEl) {
+      mainEl.style.minHeight      = mainEl.scrollHeight + 'px';
+      mainEl.style.visibility     = 'hidden';
+    }
+  }
+
+  // ===== 残骸バナー =====
+  function showRuinsBanner() {
+    if (document.getElementById('tom-ruins-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'tom-ruins-banner';
+    banner.style.cssText = [
+      'position:fixed', 'top:1rem', 'left:50%',
+      'transform:translateX(-50%)',
+      'background:rgba(12,6,6,0.9)',
+      'color:#ff9966',
+      'font-family:monospace', 'font-size:0.75rem', 'font-weight:700',
+      'padding:0.4rem 0.9rem',
+      'border-radius:8px', 'border:1px solid rgba(255,100,50,0.35)',
+      'backdrop-filter:blur(5px)',
+      'z-index:4000',
+      'display:flex', 'align-items:center', 'gap:0.7rem',
+      'white-space:nowrap', 'user-select:none',
+      'opacity:0', 'transition:opacity 0.4s ease',
+    ].join(';');
+    banner.innerHTML = `
+      <span>☠️ ページは崩壊中 — 残骸を掴んで投げられます</span>
+      <button id="tom-ruins-repair" style="
+        padding:0.2rem 0.7rem;background:#2a2a2a;color:#ccc;
+        border:1px solid #555;border-radius:5px;cursor:pointer;
+        font-size:0.72rem;font-family:monospace;
+      ">修復</button>
+      <button id="tom-ruins-reset" style="
+        padding:0.2rem 0.7rem;background:transparent;color:#777;
+        border:1px solid #444;border-radius:5px;cursor:pointer;
+        font-size:0.72rem;font-family:monospace;
+      ">リセット</button>
+    `;
+    document.body.appendChild(banner);
+    requestAnimationFrame(() => { banner.style.opacity = '1'; });
+
+    (banner.querySelector('#tom-ruins-repair') as HTMLButtonElement)
+      .addEventListener('click', () => location.reload());
+    (banner.querySelector('#tom-ruins-reset') as HTMLButtonElement)
+      .addEventListener('click', () => {
+        localStorage.setItem(AVATAR_KEY, '0');
+        location.reload();
+      });
+  }
+
+  // ===== 読み込み時の残骸モード =====
+  function initRuinsMode() {
+    ruinsMode = true;
+    setupPhysicsElements(window.innerWidth / 2, window.innerHeight / 2, false);
+    // resumePhysics は呼ばない: 掴んだ瞬間の pointerdown が起動する
+    setTimeout(showRuinsBanner, 600);
+  }
+
+  // ===== 絵文字バースト =====
+  const emojiPool = [
+    '🐺','💜','🌙','⭐','✨','🎮','💻','🍜',
+    '🎵','🔮','🌸','💎','🫧','🦊','🐱','🌟',
+    '🍙','🎲','🫀','🧊','🎀','🪐','🫐','🍡',
+  ];
+
+  function burstEmojis(x: number, y: number, amount = 9) {
+    const total = amount + Math.floor(Math.random() * 4);
+    for (let i = 0; i < total; i++) {
+      const el  = document.createElement('span');
+      el.textContent = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+      const dx  = (Math.random() - 0.5) * 140;
+      const dy  = -(35 + Math.random() * 95);
+      const rot = (Math.random() - 0.5) * 420;
+      const sz  = 1 + Math.random() * 0.9;
+      const dl  = i * 28;
+      el.style.cssText = [
+        'position:fixed',
+        `left:${x}px`, `top:${y}px`,
+        `font-size:${sz}rem`,
+        'pointer-events:none', 'z-index:9999', 'user-select:none',
+        `animation:tom-av-float 0.9s cubic-bezier(0.4,0,0.2,1) ${dl}ms forwards`,
+        `--dx:${dx}px`, `--dy:${dy}px`, `--rot:${rot}deg`,
+      ].join(';');
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 970 + dl);
+    }
+  }
+
+  // ===== 爆発演出 =====
+  function triggerExplosion(cx: number, cy: number) {
+    ruinsMode = true;
+
+    // フラッシュ
+    const flash = document.createElement('div');
+    flash.style.cssText = [
+      'position:fixed', 'inset:0',
+      'background:radial-gradient(ellipse at center,#ffaa00 0%,#ff3300 60%,transparent 100%)',
+      'opacity:0.85', 'z-index:2000', 'pointer-events:none',
+      'transition:opacity 0.45s ease',
+    ].join(';');
+    document.body.appendChild(flash);
+    setTimeout(() => { flash.style.opacity = '0'; }, 80);
+    setTimeout(() => flash.remove(), 600);
+
+    // シェイク
+    document.body.style.animation = 'tom-screen-shake 0.65s ease';
+    setTimeout(() => { document.body.style.animation = ''; }, 700);
+
+    // 絵文字大量放出
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        burstEmojis(cx + (Math.random() - 0.5) * 200, cy + (Math.random() - 0.5) * 200, 6);
+      }, i * 80);
+    }
+
+    // 重力崩壊
+    setTimeout(() => {
+      setupPhysicsElements(cx, cy, true);
+      resumePhysics();
+    }, 380);
+
+    // オーバーレイ
+    setTimeout(() => {
+      const overlay = document.createElement('div');
+      overlay.id = 'tom-kaboom-overlay';
+      overlay.style.cssText = [
+        'position:fixed', 'inset:0',
+        'background:rgba(0,0,6,0.88)',
+        'display:flex', 'flex-direction:column',
+        'align-items:center', 'justify-content:center',
+        'z-index:3000', 'opacity:0',
+        'transition:opacity 0.6s ease',
+        'font-family:monospace',
+        'backdrop-filter:blur(3px)',
+      ].join(';');
+
+      overlay.innerHTML = `
+        <div style="font-size:5rem;animation:tom-kaboom-pop 0.6s cubic-bezier(0.4,0,0.2,1) both">💥</div>
+        <div style="
+          font-size:2.6rem;font-weight:900;color:#ff6b00;margin:0.6rem 0;
+          animation:tom-kaboom-pulse 1.2s ease infinite;letter-spacing:0.05em;
+        ">1000回！！！</div>
+        <div style="font-size:1rem;color:#888;margin-bottom:0.5rem">ページが崩壊しました</div>
+        <div style="font-size:0.8rem;color:#555;margin-bottom:2rem">やりましたね</div>
+        <div id="tom-kaboom-countdown" style="font-size:0.85rem;color:#666;margin-bottom:1.2rem">
+          30秒後に自動修復…
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.6rem">
+          <button id="tom-kaboom-btn" style="
+            padding:0.6rem 1.6rem;
+            background:linear-gradient(135deg,#ff6b00,#ff3300);
+            color:#fff;font-weight:700;font-size:0.95rem;
+            border:none;border-radius:10px;cursor:pointer;
+            transition:transform 0.15s ease;
+          ">今すぐ修復する</button>
+          <button id="tom-kaboom-play-btn" style="
+            padding:0.5rem 1.4rem;
+            background:linear-gradient(135deg,#3b1f6e,#7b3fe4);
+            color:#e8d9ff;font-weight:700;font-size:0.9rem;
+            border:none;border-radius:10px;cursor:pointer;
+            transition:transform 0.15s ease;
+          ">🎮 残骸で遊ぶ</button>
+          <button id="tom-kaboom-reset-btn" style="
+            padding:0.4rem 1.2rem;
+            background:transparent;color:#555;font-weight:600;font-size:0.8rem;
+            border:1px solid #333;border-radius:8px;cursor:pointer;
+            transition:transform 0.15s ease, color 0.15s ease;
+          ">🔄 カウントをリセットして修復</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+      });
+
+      let remaining = 30;
+      const countdownEl = overlay.querySelector('#tom-kaboom-countdown')!;
+      const interval = setInterval(() => {
+        remaining--;
+        countdownEl.textContent = remaining > 0 ? `${remaining}秒後に自動修復…` : '修復中…';
+        if (remaining <= 0) { clearInterval(interval); location.reload(); }
+      }, 1000);
+
+      const repairBtn = overlay.querySelector('#tom-kaboom-btn') as HTMLButtonElement;
+      repairBtn.addEventListener('mouseenter', () => { repairBtn.style.transform = 'scale(1.06)'; });
+      repairBtn.addEventListener('mouseleave', () => { repairBtn.style.transform = 'scale(1)'; });
+      repairBtn.addEventListener('click', () => { clearInterval(interval); location.reload(); });
+
+      const playBtn = overlay.querySelector('#tom-kaboom-play-btn') as HTMLButtonElement;
+      playBtn.addEventListener('mouseenter', () => { playBtn.style.transform = 'scale(1.06)'; });
+      playBtn.addEventListener('mouseleave', () => { playBtn.style.transform = 'scale(1)'; });
+      playBtn.addEventListener('click', () => {
+        clearInterval(interval);
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 650);
+        showRuinsBanner();
+      });
+
+      const resetBtn = overlay.querySelector('#tom-kaboom-reset-btn') as HTMLButtonElement;
+      resetBtn.addEventListener('mouseenter', () => { resetBtn.style.color = '#aaa'; resetBtn.style.transform = 'scale(1.04)'; });
+      resetBtn.addEventListener('mouseleave', () => { resetBtn.style.color = '#555'; resetBtn.style.transform = 'scale(1)'; });
+      resetBtn.addEventListener('click', () => {
+        clearInterval(interval);
+        localStorage.setItem(AVATAR_KEY, '0');
+        location.reload();
+      });
+    }, 2600);
+  }
+
+  // ===== クリックカウンターを作成 =====
+  const memberHeader = document.querySelector('.member-header');
+  let clickCounterEl: HTMLElement | null = null;
+  if (memberHeader) {
+    clickCounterEl = document.createElement('p');
+    clickCounterEl.id = 'tom-click-counter';
+    clickCounterEl.textContent = count > 0 ? `🐾 無駄なクリック: ${count}回` : '';
+    memberHeader.insertAdjacentElement('afterend', clickCounterEl);
+  }
+
+  // ===== アバター設定 =====
   const avatar = document.querySelector('.avatar') as HTMLImageElement | null;
+  const toast  = document.getElementById('tom-avatar-toast');
+
   if (avatar) {
-    const AVATAR_KEY = 'tom-avatar-clicks';
-    const toast = document.getElementById('tom-avatar-toast');
-
-    const emojiPool = [
-      '🐺','💜','🌙','⭐','✨','🎮','💻','🍜',
-      '🎵','🔮','🌸','💎','🫧','🦊','🐱','🌟',
-      '🍙','🎲','🫀','🧊','🎀','🪐','🫐','🍡',
-    ];
-
     const milestones: Record<number, string | null> = {
       1:    '😮 やめてくれ',
       5:    '😩 痛いってば！',
@@ -165,85 +789,32 @@
       200:  '👑 化け物め',
       500:  '🙏 神に近い何か',
       999:  '⚠️ あと1回…やめとけよ？',
-      1000: null, // → 爆発
+      1000: null,
     };
 
-    let count = parseInt(localStorage.getItem(AVATAR_KEY) ?? '0', 10);
-
-    // --- クリックカウンター (h1 の下に挿入) ---
-    const memberHeader = document.querySelector('.member-header');
-    let clickCounterEl: HTMLElement | null = null;
-    if (memberHeader) {
-      clickCounterEl = document.createElement('p');
-      clickCounterEl.id = 'tom-click-counter';
-      clickCounterEl.textContent = count > 0 ? `🐾 無駄なクリック: ${count}回` : '';
-      memberHeader.insertAdjacentElement('afterend', clickCounterEl);
-    }
-
-    // --- ランダムアニメーション ---
     const animClasses = ['tom-av-spin', 'tom-av-bounce', 'tom-av-shake', 'tom-av-squish'] as const;
-
     function playAvatarAnim() {
       const cls = animClasses[Math.floor(Math.random() * animClasses.length)];
       avatar!.classList.add(cls);
       setTimeout(() => avatar!.classList.remove(cls), 600);
     }
 
-    // --- 絵文字バースト ---
-    function burstEmojis(x: number, y: number, amount = 9) {
-      const total = amount + Math.floor(Math.random() * 4);
-      for (let i = 0; i < total; i++) {
-        const el = document.createElement('span');
-        el.textContent = emojiPool[Math.floor(Math.random() * emojiPool.length)];
-        const dx  = (Math.random() - 0.5) * 140;
-        const dy  = -(35 + Math.random() * 95);
-        const rot = (Math.random() - 0.5) * 420;
-        const sz  = 1 + Math.random() * 0.9;
-        const delay = i * 28;
-        el.style.cssText = [
-          'position:fixed',
-          `left:${x}px`,
-          `top:${y}px`,
-          `font-size:${sz}rem`,
-          'pointer-events:none',
-          'z-index:9999',
-          'user-select:none',
-          `animation:tom-av-float 0.9s cubic-bezier(0.4,0,0.2,1) ${delay}ms forwards`,
-          `--dx:${dx}px`,
-          `--dy:${dy}px`,
-          `--rot:${rot}deg`,
-        ].join(';');
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 970 + delay);
-      }
-    }
-
-    // --- +1 無駄 フローティングテキスト ---
     function showPlusOne(x: number, y: number) {
       const el = document.createElement('div');
       el.textContent = '無駄なクリック +1';
       el.style.cssText = [
-        'position:fixed',
-        `left:${x}px`,
-        `top:${y - 8}px`,
-        'font-size:0.82rem',
-        'font-weight:800',
-        'color:#a78bfa',
+        'position:fixed', `left:${x}px`, `top:${y - 8}px`,
+        'font-size:0.82rem', 'font-weight:800', 'color:#a78bfa',
         'text-shadow:0 0 8px rgba(167,139,250,0.6)',
-        'pointer-events:none',
-        'z-index:9999',
-        'user-select:none',
-        'white-space:nowrap',
-        'letter-spacing:0.04em',
+        'pointer-events:none', 'z-index:9999', 'user-select:none',
+        'white-space:nowrap', 'letter-spacing:0.04em',
         'animation:tom-av-plusone 0.85s cubic-bezier(0.4,0,0.2,1) forwards',
       ].join(';');
       document.body.appendChild(el);
       setTimeout(() => el.remove(), 900);
     }
 
-    // --- トースト ---
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
     function showToast(msg: string) {
       if (!toast) return;
       if (toastTimer) clearTimeout(toastTimer);
@@ -252,161 +823,27 @@
       toastTimer = setTimeout(() => toast.classList.remove('visible'), 2800);
     }
 
-    // ===== 爆発演出 =====
-    function triggerExplosion(cx: number, cy: number) {
-      // 連打防止: アバターを無効化
-      avatar!.style.pointerEvents = 'none';
-
-      // 1. 画面フラッシュ
-      const flash = document.createElement('div');
-      flash.style.cssText = [
-        'position:fixed', 'inset:0',
-        'background:radial-gradient(ellipse at center, #ffaa00 0%, #ff3300 60%, transparent 100%)',
-        'opacity:0.85', 'z-index:2000', 'pointer-events:none',
-        'transition:opacity 0.45s ease',
-      ].join(';');
-      document.body.appendChild(flash);
-      setTimeout(() => { flash.style.opacity = '0'; }, 80);
-      setTimeout(() => flash.remove(), 600);
-
-      // 2. 画面シェイク
-      const body = document.body as HTMLElement;
-      body.style.animation = 'tom-screen-shake 0.65s ease';
-      setTimeout(() => { body.style.animation = ''; }, 700);
-
-      // 3. 爆発絵文字を大量放出
-      for (let i = 0; i < 6; i++) {
-        setTimeout(() => {
-          const jx = cx + (Math.random() - 0.5) * 200;
-          const jy = cy + (Math.random() - 0.5) * 200;
-          burstEmojis(jx, jy, 6);
-        }, i * 80);
-      }
-
-      // 4. 主要要素を吹っ飛ばす
-      const targets: Array<{ sel: string; tx: string; ty: string; rot: number; delay: number }> = [
-        { sel: '#sidebar',       tx: '-180%', ty: '-60%',  rot: -45,  delay: 80  },
-        { sel: '.member-header', tx: '0%',    ty: '-250%', rot: 25,   delay: 0   },
-        { sel: 'article',        tx: '160%',  ty: '140%',  rot: 30,   delay: 120 },
-        { sel: 'h1',             tx: '-100%', ty: '-300%', rot: -60,  delay: 40  },
-        { sel: '.link-card:nth-child(1)', tx: '-200%', ty: '100%', rot: -90, delay: 160 },
-        { sel: '.link-card:nth-child(2)', tx: '200%',  ty: '-80%', rot: 80,  delay: 200 },
-        { sel: '.link-card:nth-child(3)', tx: '-150%', ty: '200%', rot: 120, delay: 240 },
-      ];
-
-      targets.forEach(({ sel, tx, ty, rot, delay }) => {
-        const el = document.querySelector(sel) as HTMLElement | null;
-        if (!el) return;
-        el.classList.add('tom-exploding');
-        setTimeout(() => {
-          el.style.transform = `translate(${tx}, ${ty}) rotate(${rot}deg) scale(0.3)`;
-          el.style.opacity = '0';
-        }, delay + 50);
-      });
-
-      // 5. 爆発オーバーレイ表示
-      setTimeout(() => {
-        const overlay = document.createElement('div');
-        overlay.id = 'tom-kaboom-overlay';
-        overlay.style.cssText = [
-          'position:fixed', 'inset:0',
-          'background:#000',
-          'display:flex', 'flex-direction:column',
-          'align-items:center', 'justify-content:center',
-          'z-index:3000', 'opacity:0',
-          'transition:opacity 0.5s ease',
-          'font-family:monospace',
-        ].join(';');
-
-        overlay.innerHTML = `
-          <div style="font-size:5rem;animation:tom-kaboom-pop 0.6s cubic-bezier(0.4,0,0.2,1) both">💥</div>
-          <div style="
-            font-size:2.6rem;font-weight:900;
-            color:#ff6b00;margin:0.6rem 0;
-            animation:tom-kaboom-pulse 1.2s ease infinite;
-            letter-spacing:0.05em;
-          ">1000回！！！</div>
-          <div style="font-size:1rem;color:#888;margin-bottom:0.5rem">ページが崩壊しました</div>
-          <div style="font-size:0.8rem;color:#555;margin-bottom:2rem">やりましたね</div>
-          <div id="tom-kaboom-countdown" style="font-size:0.85rem;color:#666;margin-bottom:1.2rem">
-            5秒後に自動修復…
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:0.6rem">
-            <button id="tom-kaboom-btn" style="
-              padding:0.6rem 1.6rem;
-              background:linear-gradient(135deg,#ff6b00,#ff3300);
-              color:#fff;font-weight:700;font-size:0.95rem;
-              border:none;border-radius:10px;cursor:pointer;
-              transition:transform 0.15s ease;
-            ">今すぐ修復する</button>
-            <button id="tom-kaboom-reset-btn" style="
-              padding:0.4rem 1.2rem;
-              background:transparent;
-              color:#555;font-weight:600;font-size:0.8rem;
-              border:1px solid #333;border-radius:8px;cursor:pointer;
-              transition:transform 0.15s ease, color 0.15s ease;
-            ">🔄 カウントをリセットして修復</button>
-          </div>
-        `;
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => { overlay.style.opacity = '1'; });
-        });
-
-        // カウントダウン
-        let remaining = 30;
-        const countdownEl = overlay.querySelector('#tom-kaboom-countdown')!;
-        const interval = setInterval(() => {
-          remaining--;
-          countdownEl.textContent = remaining > 0
-            ? `${remaining}秒後に自動修復…`
-            : '修復中…';
-          if (remaining <= 0) {
-            clearInterval(interval);
-            location.reload();
-          }
-        }, 1000);
-
-        const repairBtn = overlay.querySelector('#tom-kaboom-btn') as HTMLButtonElement;
-        repairBtn.addEventListener('mouseenter', () => { repairBtn.style.transform = 'scale(1.06)'; });
-        repairBtn.addEventListener('mouseleave', () => { repairBtn.style.transform = 'scale(1)'; });
-        repairBtn.addEventListener('click', () => {
-          clearInterval(interval);
-          location.reload();
-        });
-
-        const resetBtn = overlay.querySelector('#tom-kaboom-reset-btn') as HTMLButtonElement;
-        resetBtn.addEventListener('mouseenter', () => { resetBtn.style.color = '#aaa'; resetBtn.style.transform = 'scale(1.04)'; });
-        resetBtn.addEventListener('mouseleave', () => { resetBtn.style.color = '#555'; resetBtn.style.transform = 'scale(1)'; });
-        resetBtn.addEventListener('click', () => {
-          clearInterval(interval);
-          localStorage.setItem(AVATAR_KEY, '0');
-          location.reload();
-        });
-      }, 650);
-    }
-
-    // --- クリックハンドラ ---
     avatar.addEventListener('click', (e) => {
+      if (ruinsMode) return;
       count++;
       localStorage.setItem(AVATAR_KEY, String(count));
-
       if (clickCounterEl) {
         clickCounterEl.textContent = `🐾 無駄なクリック: ${count}回`;
       }
-
       if (count === 1000) {
         triggerExplosion(e.clientX, e.clientY);
         return;
       }
-
       playAvatarAnim();
       showPlusOne(e.clientX, e.clientY);
       burstEmojis(e.clientX, e.clientY);
-
       const msg = milestones[count];
       if (msg) showToast(msg);
     });
+  }
+
+  // ===== 起動時チェック: 1000回以上ならそのまま残骸モードへ =====
+  if (count >= 1000) {
+    initRuinsMode();
   }
 </script>
