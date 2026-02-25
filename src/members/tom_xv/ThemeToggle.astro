@@ -243,7 +243,8 @@
       btn.textContent = dark ? '☀️' : '🌙';
     };
 
-    apply(localStorage.getItem(STORAGE_KEY) === 'dark');
+    // デフォルトはダーク。明示的に 'light' が保存されている場合のみライトテーマ
+    apply(localStorage.getItem(STORAGE_KEY) !== 'light');
 
     btn.addEventListener('click', () => {
       if (switching) return;
