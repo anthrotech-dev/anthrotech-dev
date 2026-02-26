@@ -1,0 +1,185 @@
+---
+title: Raspi Weather Station Board
+description: Raspberry Pi + Chromiumキオスクで動く、案内掲示板風の天気ダッシュボード
+---
+
+import ThemeToggle from '../../ThemeToggle.astro'
+import AvatarEgg from '../../AvatarEgg.astro'
+
+<ThemeToggle />
+<AvatarEgg />
+
+<style>{`
+  .tb-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tb-subtitle {
+    font-size: 1rem;
+    color: #555;
+    margin: 0 !important;
+  }
+
+  .tb-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.4rem 0;
+  }
+
+  .tb-badge {
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .tb-badge.ts       { background: #3178c622; color: #2563b0; border: 1px solid #3178c655; }
+  .tb-badge.bun      { background: #fbf0dd;   color: #a8630a; border: 1px solid #f6c97888; }
+  .tb-badge.raspi    { background: #c51a4a22; color: #9b1239; border: 1px solid #c51a4a55; }
+  .tb-badge.meteo    { background: #0ea5e922; color: #0369a1; border: 1px solid #0ea5e955; }
+  .tb-badge.jma      { background: #16a34a22; color: #166534; border: 1px solid #16a34a55; }
+
+  .tb-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .tb-feature {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: #f8f7ff;
+    border: 1px solid #e0d9ff;
+  }
+
+  .tb-feature-icon {
+    font-size: 1.4rem;
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .tb-feature-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #3d2d8a;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .tb-feature-desc {
+    font-size: 0.78rem;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  .tb-section-title {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #5c4a9e;
+    border-bottom: 2px solid #c4b5fd;
+    padding-bottom: 0.3rem;
+    margin: 1.5rem 0 0.75rem !important;
+  }
+
+  .tb-link-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .tb-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #c4b5fd;
+    text-decoration: none !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #3d2d8a !important;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+
+  .tb-link-btn:hover {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(109,77,193,0.18);
+  }
+`}</style>
+
+# Raspi Weather Station Board
+
+<div class="tb-hero">
+  <p class="tb-subtitle">Raspberry Pi + Chromiumキオスクで動く、案内掲示板風の天気ダッシュボードです。主要都市・長野県の気象情報をリアルタイム表示します。</p>
+  <div class="tb-badges">
+    <span class="tb-badge ts">TypeScript</span>
+    <span class="tb-badge bun">Bun</span>
+    <span class="tb-badge raspi">Raspberry Pi</span>
+    <span class="tb-badge meteo">Open-Meteo</span>
+    <span class="tb-badge jma">気象庁API</span>
+  </div>
+</div>
+
+<p class="tb-section-title">主な機能</p>
+
+<div class="tb-features">
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🌤️</span>
+    <span class="tb-feature-title">リアルタイム天気表示</span>
+    <span class="tb-feature-desc">主要都市と長野県エリアの気象情報をOpen-Meteo APIで取得・表示</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🚨</span>
+    <span class="tb-feature-title">警報・注意報</span>
+    <span class="tb-feature-desc">気象庁の警報・注意報を生文でリアルタイム表示</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🖥️</span>
+    <span class="tb-feature-title">システム監視</span>
+    <span class="tb-feature-desc">CPU温度・負荷・メモリ・ディスク・稼働時間・IPアドレスを一覧表示</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🌐</span>
+    <span class="tb-feature-title">多言語自動ローテーション</span>
+    <span class="tb-feature-desc">日本語・英語・中国語・韓国語を自動で切り替えて表示</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">📱</span>
+    <span class="tb-feature-title">レスポンシブ対応</span>
+    <span class="tb-feature-desc">キオスク画面だけでなくモバイルブラウザでも快適に閲覧可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🔄</span>
+    <span class="tb-feature-title">自動起動</span>
+    <span class="tb-feature-desc">LXDE自動起動設定でRaspberry Pi起動時にキオスクモードで立ち上がる</span>
+  </div>
+</div>
+
+<p class="tb-section-title">技術構成</p>
+
+| 項目 | 内容 |
+|---|---|
+| 言語 | TypeScript |
+| ランタイム | Bun |
+| 天気API | Open-Meteo (CC BY 4.0) |
+| 警報データ | 気象庁警報JSON |
+| システム情報 | ローカル `/api/pi-status` |
+| 動作環境 | Raspberry Pi + Chromiumキオスク |
+
+<p class="tb-section-title">リンク</p>
+
+<div class="tb-link-row">
+  <a href="https://github.com/TomXV/raspi-weather-station-board" class="tb-link-btn" target="_blank" rel="noopener noreferrer">
+    GitHub
+  </a>
+</div>
