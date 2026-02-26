@@ -41,6 +41,13 @@ const defaultDescription = 'Anthrotechは、ケモノ好き x 技術好き な�
             }
             <div id="main">
                 <slot />
+                <footer id="footer">
+                    <div class="footer-links">
+                        <a href="https://github.com/anthrotech-dev" target="_blank" rel="noopener noreferrer">GitHub</a>
+                        <a href="https://www.youtube.com/playlist?list=PLlsx9wlvmNs30tN7OMWwECUDqDL5I_kwj" target="_blank" rel="noopener noreferrer">YouTube</a>
+                        <a href="https://discord.gg/wq63YhUv76" target="_blank" rel="noopener noreferrer">Discord</a>
+                    </div>
+                </footer>
             </div>
         </div>
 	</body>
@@ -100,6 +107,11 @@ article p {
 article a {
     color: #0066cc;
     text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+article a:hover {
+    color: #004499;
 }
 
 h2+p {
@@ -181,6 +193,29 @@ body {
     flex: 1;
     min-height: 100dvh;
     padding: 20px 0;
+}
+
+#footer {
+    margin-top: auto;
+    padding: 20px 0;
+    border-top: 1px solid #ccc;
+    text-align: center;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.footer-links a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: #333;
 }
 
 </style>
