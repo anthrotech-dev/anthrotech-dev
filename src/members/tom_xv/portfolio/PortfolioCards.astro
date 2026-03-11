@@ -1,0 +1,44 @@
+---
+const items = [
+  {
+    href: '/@tom_xv/portfolio/TranslateBot',
+    icon: '🌐',
+    title: 'Translate-Bot',
+    desc: '国旗リアクションで自動翻訳するDiscordボット',
+  },
+  {
+    href: '/@tom_xv/portfolio/ydl-client',
+    icon: '📱',
+    title: 'ydl-client',
+    desc: 'yt-dlpのインストール可能PWAダウンロードクライアント',
+  },
+  {
+    href: '/@tom_xv/portfolio/yt-dlp-api',
+    icon: '📡',
+    title: 'yt-dlp-api',
+    desc: 'yt-dlpのHTTP APIラッパーサーバー',
+  },
+  {
+    href: '/@tom_xv/portfolio/ydl-cli',
+    icon: '⚡',
+    title: 'ydl-cli',
+    desc: 'Bunベースのyt-dlp APIクライアント',
+  },
+  {
+    href: '/@tom_xv/portfolio/RaspiWeatherStation',
+    icon: '🌤️',
+    title: 'Raspi Weather Station Board',
+    desc: 'Raspberry Pi + Chromiumキオスクで動く天気ダッシュボード',
+  },
+];
+---
+
+<div class="tb-features">
+  {items.map((item) => (
+    <a href={item.href} class="tb-feature" style="text-decoration:none;">
+      <span class="tb-feature-icon">{item.icon}</span>
+      <span class="tb-feature-title">{item.title}</span>
+      <span class="tb-feature-desc">{item.desc}</span>
+    </a>
+  ))}
+</div>
