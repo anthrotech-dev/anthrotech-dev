@@ -2,9 +2,14 @@
 ---
 
 <script>
-  if (!document.getElementById('tb-name-gradient-style')) {
-    const style = document.createElement('style');
+  let style = document.getElementById('tb-name-gradient-style');
+  if (!(style instanceof HTMLStyleElement)) {
+    style = document.createElement('style');
     style.id = 'tb-name-gradient-style';
+    document.head.appendChild(style);
+  }
+
+  if (style instanceof HTMLStyleElement) {
     style.textContent = `
       @font-face {
         font-family: 'Zpix';
@@ -84,7 +89,6 @@
         }
       }
     `;
-    document.head.appendChild(style);
   }
 
   const title = document.querySelector('.member-header h1');
@@ -92,9 +96,9 @@
     title.classList.add('tb-title-root');
     title.innerHTML = `
       <span class="tb-title-line tb-title-gradient">トム |</span>
-      <span class="tb-title-swap" aria-label="Long Zixun または 龙 紫熏">
-        <span class="tb-title-primary tb-title-gradient">Long Zixun</span>
-        <span class="tb-title-alt tb-title-gradient">龙 紫熏</span>
+      <span class="tb-title-swap" aria-label="Lóng Zǐxūn Tron または 龙 紫熏トロン">
+        <span class="tb-title-primary tb-title-gradient">Lóng Zǐxūn Tron</span>
+        <span class="tb-title-alt tb-title-gradient">龙 紫熏トロン</span>
       </span>
     `;
 
