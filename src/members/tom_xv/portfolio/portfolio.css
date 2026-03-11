@@ -114,3 +114,23 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(109,77,193,0.18);
 }
+
+/* ポートフォリオ内テーブル共通スタイル */
+article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+article th,
+article td {
+  border: 1px solid #ddd;
+  padding: 0.6rem 1rem;
+  text-align: left;
+}
+
+article th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
