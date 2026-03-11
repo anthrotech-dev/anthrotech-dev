@@ -1,0 +1,83 @@
+---
+title: ydl-client
+description: yt-dlpのインストール可能PWAダウンロードクライアント
+---
+
+import ThemeToggle from '../../ThemeToggle.astro'
+import AvatarEgg from '../../AvatarEgg.astro'
+import '../portfolio.css'
+
+<ThemeToggle />
+<AvatarEgg />
+
+# ydl-client
+
+<div class="tb-hero">
+  <p class="tb-subtitle">メディアURLを貼り付けて、ブラウザーから直接ダウンロードできるインストール可能なPWA。yt-dlpをフロントエンドから簡単に使える。</p>
+  <div class="tb-badges">
+    <span class="tb-badge bun">Bun</span>
+    <span class="tb-badge react">React</span>
+    <span class="tb-badge pwa">PWA</span>
+    <span class="tb-badge ytdlp">yt-dlp</span>
+  </div>
+</div>
+
+<p class="tb-section-title">主な機能</p>
+
+<div class="tb-features">
+  <div class="tb-feature">
+    <span class="tb-feature-icon">📱</span>
+    <span class="tb-feature-title">ホーム画面にインストール</span>
+    <span class="tb-feature-desc">PWA対応。スマートフォンやデスクトップから一般的なアプリのようにインストール可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🎬</span>
+    <span class="tb-feature-title">複数フォーマット対応</span>
+    <span class="tb-feature-desc">動画（webm, mkv, mp4）・音声（wav, flac, mp3, m4a）など多形式に対応</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">⏳</span>
+    <span class="tb-feature-title">ダウンロード進捗表示</span>
+    <span class="tb-feature-desc">リアルタイムで進捗バーを表示、ユーザーが待機状況を把握可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">⚠️</span>
+    <span class="tb-feature-title">アプリ内エラー表示</span>
+    <span class="tb-feature-desc">ダウンロード失敗時など、ユーザーに分かりやすいエラーメッセージを表示</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🔄</span>
+    <span class="tb-feature-title">フォーマット選択</span>
+    <span class="tb-feature-desc">ダウンロード前に出力フォーマットを選択。用途に応じた形式で保存</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🌐</span>
+    <span class="tb-feature-title">クロスオリジン対応</span>
+    <span class="tb-feature-desc">プロキシ経由でダウンロード、セキュリティと利便性を両立</span>
+  </div>
+</div>
+
+<p class="tb-section-title">使い方</p>
+
+1. サイトにアクセス
+2. メディアURL（動画リンク）を入力
+3. 希望する出力フォーマットを選択
+4. ダウンロード開始 → ブラウザーに直接保存
+
+<p class="tb-section-title">技術構成</p>
+
+| 項目 | 内容 |
+|---|---|
+| フレームワーク | React |
+| ランタイム | Bun |
+| ルーター | React Router |
+| ビルドツール | Bun bundler (`Bun.build`) |
+| バックエンド連携 | yt-dlp-api |
+
+<p class="tb-section-title">リンク</p>
+
+<div class="tb-link-row">
+  <a href="https://ydl-client.lugiaxetomxv.net/" class="tb-link-btn" target="_blank" rel="noopener noreferrer">
+    🌐 サイト（メンバー限定）
+  </a>
+</div>

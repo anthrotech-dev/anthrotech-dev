@@ -1,0 +1,114 @@
+---
+title: ydl-cli
+description: Bunベースのyt-dlp APIクライアント
+---
+
+import ThemeToggle from '../../ThemeToggle.astro'
+import AvatarEgg from '../../AvatarEgg.astro'
+import '../portfolio.css'
+
+<ThemeToggle />
+<AvatarEgg />
+
+# ydl-cli
+
+<div class="tb-hero">
+  <p class="tb-subtitle">Bunベースのコンパクトなydl-cliは、yt-dlp-apiの軽量クライアント。コマンドラインからメディアURLをダウンロード可能。help/manコマンド対応。</p>
+  <div class="tb-badges">
+    <span class="tb-badge ts">TypeScript</span>
+    <span class="tb-badge bun">Bun</span>
+    <span class="tb-badge npm">NPM Registry</span>
+  </div>
+</div>
+
+<p class="tb-section-title">主な機能</p>
+
+<div class="tb-features">
+  <div class="tb-feature">
+    <span class="tb-feature-icon">⚡</span>
+    <span class="tb-feature-title">軽量CLIツール</span>
+    <span class="tb-feature-desc">BunランタイムでシンプルなCLIクライアント。APIサーバーと組み合わせて使用</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🎬</span>
+    <span class="tb-feature-title">メディアダウンロード</span>
+    <span class="tb-feature-desc">URLを指定するだけで簡単にメディアをダウンロード</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">📚</span>
+    <span class="tb-feature-title">ヘルプコマンド</span>
+    <span class="tb-feature-desc">--help と man コマンドで使い方を確認可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🔗</span>
+    <span class="tb-feature-title">APIサーバー連携</span>
+    <span class="tb-feature-desc">yt-dlp-apiサーバーと通信してダウンロード処理を実行</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🌍</span>
+    <span class="tb-feature-title">NPM公開</span>
+    <span class="tb-feature-desc">@tomxv/ydl-cli として npm からグローバルインストール可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🚀</span>
+    <span class="tb-feature-title">Bun-first</span>
+    <span class="tb-feature-desc">Bun ランタイムが必須。高速で最新の JavaScript 実行環境を活用</span>
+  </div>
+</div>
+
+<p class="tb-section-title">インストール方法</p>
+
+**グローバルインストール（推奨）:**
+```bash
+npm i -g @tomxv/ydl-cli
+```
+
+または
+
+```bash
+bun add -g @tomxv/ydl-cli
+```
+
+**ローカル開発用:**
+```bash
+cd ydl-cli
+bun link
+```
+
+<p class="tb-section-title">使用方法</p>
+
+```bash
+ydl https://example.com/video
+```
+
+```bash
+ydl --help
+```
+
+```bash
+man ydl
+```
+
+<p class="tb-section-title">動作要件</p>
+
+- **Bun v1.0+** - Bun ランタイムが必須です（Node.js のみでは非サポート）
+
+<p class="tb-section-title">技術構成</p>
+
+| 項目 | 内容 |
+|---|---|
+| 言語 | TypeScript |
+| ランタイム | Bun |
+| パッケージマネージャー | npm / bun |
+| API連携 | yt-dlp-api |
+
+<p class="tb-section-title">リンク</p>
+
+<div class="tb-link-row">
+  <a href="https://github.com/TomXV/ydl-cli" class="tb-link-btn" target="_blank" rel="noopener noreferrer">
+    🔗 GitHub リポジトリ
+  </a>
+  <a href="https://www.npmjs.com/package/@tomxv/ydl-cli" class="tb-link-btn" target="_blank" rel="noopener noreferrer">
+    📦 NPM パッケージ
+  </a>
+</div>
