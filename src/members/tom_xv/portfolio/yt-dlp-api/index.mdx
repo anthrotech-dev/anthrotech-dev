@@ -1,0 +1,87 @@
+---
+title: yt-dlp-api
+description: yt-dlpのHTTP APIラッパー
+---
+
+import ThemeToggle from '../../ThemeToggle.astro'
+import AvatarEgg from '../../AvatarEgg.astro'
+import '../portfolio.css'
+
+<ThemeToggle />
+<AvatarEgg />
+
+# yt-dlp-api
+
+<div class="tb-hero">
+  <p class="tb-subtitle">yt-dlpのHTTPラッパーサーバー。メディアURLを受け付けて、サーバーサイドでダウンロード処理を行い、結果をストリーミング配信する。</p>
+  <div class="tb-badges">
+    <span class="tb-badge ts">TypeScript</span>
+    <span class="tb-badge bun">Bun</span>
+    <span class="tb-badge ytdlp">yt-dlp</span>
+    <span class="tb-badge http">HTTP API</span>
+  </div>
+</div>
+
+<p class="tb-section-title">主な機能</p>
+
+<div class="tb-features">
+  <div class="tb-feature">
+    <span class="tb-feature-icon">📡</span>
+    <span class="tb-feature-title">HTTPエンドポイント</span>
+    <span class="tb-feature-desc">REST APIとしてメディアURLを受け付け、バックエンドで処理を実行</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🔄</span>
+    <span class="tb-feature-title">ストリーミング配信</span>
+    <span class="tb-feature-desc">ダウンロード完了後、ファイルをクライアントにストリーミング返却</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">⚙️</span>
+    <span class="tb-feature-title">サーバーサイド処理</span>
+    <span class="tb-feature-desc">yt-dlpをサーバー上で実行、クライアント側は依存関係不要</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🎯</span>
+    <span class="tb-feature-title">複数クライアント対応</span>
+    <span class="tb-feature-desc">curlなどの直接APIリクエストはもちろん、ydl-cliなどのクライアントから利用可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">📊</span>
+    <span class="tb-feature-title">ヘルスチェック</span>
+    <span class="tb-feature-desc">GET /health エンドポイントでサーバーの状態確認が可能</span>
+  </div>
+  <div class="tb-feature">
+    <span class="tb-feature-icon">🐳</span>
+    <span class="tb-feature-title">Docker対応</span>
+    <span class="tb-feature-desc">Dockerfileが含まれており、コンテナ環境での実行が容易</span>
+  </div>
+</div>
+
+<p class="tb-section-title">使用方法</p>
+
+**直接API呼び出し（curl）:**
+```bash
+curl "https://yt-dlp-api.lugiaxetomxv.net/api/download?url=https://example.com/video"
+```
+
+**CLIクライアント経由:**
+```bash
+ydl https://example.com/video
+```
+
+<p class="tb-section-title">技術構成</p>
+
+| 項目 | 内容 |
+|---|---|
+| 言語 | TypeScript |
+| ランタイム | Bun |
+| 処理エンジン | yt-dlp |
+| デプロイメント | Docker |
+
+<p class="tb-section-title">リンク</p>
+
+<div class="tb-link-row">
+  <span class="tb-link-btn" style="opacity:0.6;cursor:default;">
+    🔒 プライベートリポジトリ
+  </span>
+</div>
