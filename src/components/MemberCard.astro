@@ -16,6 +16,8 @@ const { name, avatar, description, href } = Astro.props;
         border-radius: 8px;
         padding: 16px;
         width: 300px;
+        max-width: 100%;
+        box-sizing: border-box;
         display: flex;
         text-decoration: none;
         color: inherit;
@@ -44,6 +46,25 @@ const { name, avatar, description, href } = Astro.props;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        min-width: 0;
+    }
+
+    @media (max-width: 700px) {
+        .member-card {
+            width: 100%;
+            gap: 12px;
+            padding: 14px;
+        }
+
+        .avatar {
+            width: 72px;
+            height: 72px;
+        }
+
+        .name {
+            margin: 6px 0;
+            font-size: 1.25em;
+        }
     }
 </style>
 

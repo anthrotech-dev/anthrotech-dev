@@ -35,7 +35,9 @@ const members = Object.values(modules).map((mod: any) => mod.frontmatter);
     </div>
 
     <h2>Past Activities</h2>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?si=sPJorN7LlSh_C-V4&amp;list=PLlsx9wlvmNs30tN7OMWwECUDqDL5I_kwj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <div class="video-wrap">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?si=sPJorN7LlSh_C-V4&amp;list=PLlsx9wlvmNs30tN7OMWwECUDqDL5I_kwj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
 
     <h2>Member Directory</h2>
     <div id="members">
@@ -51,12 +53,27 @@ const members = Object.values(modules).map((mod: any) => mod.frontmatter);
 </Layout>
 
 <style>
+    .video-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 560px;
+        aspect-ratio: 16 / 9;
+        margin: 0 0 1.25rem;
+    }
+
+    .video-wrap iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
     #members {
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
         justify-content: flex-start;
         width: 100%;
+        margin: 0;
     }
     #discord {
         background-color: #7289da;
@@ -69,6 +86,16 @@ const members = Object.values(modules).map((mod: any) => mod.frontmatter);
     }
     #discord:hover {
         background-color: #5b6eae;
+    }
+
+    @media (max-width: 700px) {
+        .video-wrap {
+            max-width: 100%;
+        }
+
+        #members {
+            gap: 0.75rem;
+        }
     }
 </style>
     
