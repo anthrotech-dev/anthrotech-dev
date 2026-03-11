@@ -1,0 +1,217 @@
+---
+const sponsorUrl = 'https://github.com/sponsors/TomXV';
+const avatarUrl = 'https://github.com/TomXV.png';
+---
+
+<section class="tb-sponsor-card" aria-label="GitHub Sponsors">
+  <div class="tb-sponsor-avatar-wrap">
+    <img src={avatarUrl} alt="TomXV GitHub avatar" class="tb-sponsor-avatar" loading="lazy" />
+  </div>
+
+  <div class="tb-sponsor-main">
+    <div class="tb-sponsor-badge">GitHub Sponsors</div>
+    <h2 class="tb-sponsor-title">TomXV を支援する</h2>
+    <p class="tb-sponsor-text">
+      制作や開発活動を気に入ってくれたら、GitHub Sponsors から応援できます。
+    </p>
+  </div>
+
+  <div class="tb-sponsor-actions">
+    <a
+      href={sponsorUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="tb-sponsor-btn"
+      aria-label="Sponsor TomXV on GitHub Sponsors"
+    >
+      <span class="tb-sponsor-heart">❤</span>
+      <span class="tb-sponsor-font">Sponsor</span>
+    </a>
+  </div>
+</section>
+
+<style>
+  .tb-sponsor-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.75rem 0 1.5rem;
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fff7fb, #f5f3ff 55%, #ede9fe);
+    border: 1px solid #e9d5ff;
+    box-shadow: 0 8px 24px rgba(109, 77, 193, 0.08);
+  }
+
+  .tb-sponsor-avatar-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tb-sponsor-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 8px 20px rgba(109, 77, 193, 0.18);
+    background: #fff;
+  }
+
+  .tb-sponsor-main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .tb-sponsor-badge {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #9d174d;
+    background: #fce7f3;
+    border: 1px solid #f9a8d4;
+  }
+
+  .tb-sponsor-title {
+    margin: 0 0 0.3rem !important;
+    font-size: 1.02rem;
+    color: #3d2d8a;
+  }
+
+  .tb-sponsor-text {
+    margin: 0 !important;
+    color: #6b5ca5;
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+
+  .tb-sponsor-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .tb-sponsor-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 136px;
+    padding: 0.78rem 1.15rem;
+    border-radius: 12px;
+    text-decoration: none !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #db2777, #9333ea, #ec4899, #7c3aed);
+    background-size: 220% 220%;
+    animation: tb-sponsor-gradient 6s ease infinite;
+    box-shadow: 0 8px 18px rgba(219, 39, 119, 0.22);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+
+  .tb-sponsor-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(219, 39, 119, 0.28);
+    filter: saturate(1.06) brightness(1.04);
+    animation-duration: 3s;
+  }
+
+  .tb-sponsor-heart {
+    font-size: 1rem;
+    line-height: 1;
+    color: #ffffff;
+  }
+
+  .tb-sponsor-font {
+    color: #ffffff;
+  }
+
+  @keyframes tb-sponsor-gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .tb-sponsor-card {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .tb-sponsor-avatar-wrap {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      justify-content: center;
+      align-self: start;
+    }
+
+    .tb-sponsor-avatar {
+      width: 64px;
+      height: 64px;
+    }
+
+    .tb-sponsor-main {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .tb-sponsor-actions {
+      grid-column: 2;
+      grid-row: 2;
+      width: 100%;
+    }
+
+    .tb-sponsor-btn {
+      width: 100%;
+    }
+  }
+
+  :global(html.dark-tom) .tb-sponsor-card {
+    background: linear-gradient(135deg, #1b1833, #20193f 55%, #2a1f56);
+    border-color: #4c3d8a;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  }
+
+  :global(html.dark-tom) .tb-sponsor-avatar {
+    border-color: rgba(196, 181, 253, 0.35);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    background: #18152f;
+  }
+
+  :global(html.dark-tom) .tb-sponsor-badge {
+    color: #f9a8d4;
+    background: rgba(157, 23, 77, 0.18);
+    border-color: rgba(249, 168, 212, 0.32);
+  }
+
+  :global(html.dark-tom) .tb-sponsor-title {
+    color: #e9ddff;
+  }
+
+  :global(html.dark-tom) .tb-sponsor-text {
+    color: #b8abd9;
+  }
+
+  :global(html.dark-tom) .tb-sponsor-btn {
+    background: linear-gradient(135deg, #ec4899, #8b5cf6, #d946ef, #7c3aed);
+    background-size: 220% 220%;
+    box-shadow: 0 10px 22px rgba(139, 92, 246, 0.24);
+  }
+</style>

@@ -1,6 +1,6 @@
 ---
 id: tom_xv
-name: トム | Long Zixun
+name: トム | Lóng Zǐxūn Tron
 description: コンビニ店員してる独学エンジニア
 discord: 577486367454396419
 avatar: /assets/tom_xv/Lave.gif
@@ -9,15 +9,22 @@ avatar: /assets/tom_xv/Lave.gif
 import ProfileLinks from './ProfileLinks.astro'
 import ThemeToggle from './ThemeToggle.astro'
 import AvatarEgg from './AvatarEgg.astro'
+import SponsorCard from './SponsorCard.astro'
+import HeaderFont from './HeaderFont.astro'
+import PortfolioCards from './portfolio/PortfolioCards.astro'
+import './portfolio/portfolio.css'
 
 <ThemeToggle />
 <AvatarEgg />
+<HeaderFont />
 <ProfileLinks />
+
+## Sponsor
+
+<p>活動を気に入ってくれたら、GitHub Sponsors で支援できます。</p>
+
+<SponsorCard />
 
 ## ポートフォリオ
 
-- [Translate-Bot](/@tom_xv/portfolio/TranslateBot) — 国旗リアクションで自動翻訳するDiscordボット
-- [ydl-client](/@tom_xv/portfolio/ydl-client) — yt-dlpのインストール可能PWAダウンロードクライアント
-- [yt-dlp-api](/@tom_xv/portfolio/yt-dlp-api) — yt-dlpのHTTP APIラッパーサーバー
-- [ydl-cli](/@tom_xv/portfolio/ydl-cli) — Bunベースのyt-dlp APIクライアント
-- [Raspi Weather Station Board](/@tom_xv/portfolio/RaspiWeatherStation) — Raspberry Pi + Chromiumキオスクで動く案内掲示板風の天気ダッシュボード
+<PortfolioCards />
