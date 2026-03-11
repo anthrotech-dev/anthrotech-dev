@@ -95,10 +95,7 @@
 
   :global(html.dark-tom) {
     background-color: #0d0d1a !important;
-  }
-
-  :global(html.dark-tom *) {
-    color: #d4d4e8;
+    color: #d4d4e8 !important;
   }
 
   :global(html.dark-tom body),
@@ -106,6 +103,7 @@
   :global(html.dark-tom #sidebar),
   :global(html.dark-tom #wrap) {
     background-color: #0d0d1a;
+    color: #d4d4e8;
   }
 
   :global(html.dark-tom article) {
@@ -113,12 +111,20 @@
     border-color: #2a2a45;
   }
 
+  :global(html.dark-tom article *),
+  :global(html.dark-tom article p),
+  :global(html.dark-tom article li) {
+    color: #d4d4e8;
+  }
+
   :global(html.dark-tom article a) {
     color: #818cf8 !important;
   }
 
-  :global(html.dark-tom pre) {
+  :global(html.dark-tom pre),
+  :global(html.dark-tom pre *) {
     background-color: #1a1a30 !important;
+    color: #e2e0ff !important;
   }
 
   :global(html.dark-tom h1),
@@ -128,21 +134,17 @@
     color: #e2e0ff;
   }
 
-  /* テーブル */
-  :global(html.dark-tom table) {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  :global(html.dark-tom th),
-  :global(html.dark-tom td) {
+  /* テーブル（ダークモード） */
+  :global(html.dark-tom article th),
+  :global(html.dark-tom article td) {
     border: 1px solid #2a2a45;
-    padding: 0.4em 0.8em;
     background: #13132a;
+    color: #d4d4e8;
   }
 
-  :global(html.dark-tom th) {
+  :global(html.dark-tom article th) {
     background: #1a1a30;
+    color: #e2e0ff;
   }
 
   /* サイドバー */
@@ -158,7 +160,6 @@
   :global(html.dark-tom .link-card) {
     background: linear-gradient(135deg, #1e1b3a, #231b50) !important;
     border-color: #3d2d8a !important;
-    color: #d4d4e8 !important;
   }
 
   :global(html.dark-tom .link-card:hover) {
@@ -211,6 +212,14 @@
   :global(html.dark-tom .tb-badge.deepl)   { background: #0a1f3f !important; color: #60a5fa !important; border-color: #0f3060 !important; }
   :global(html.dark-tom .tb-badge.redis)   { background: #3f0a0a !important; color: #fca5a5 !important; border-color: #601010 !important; }
   :global(html.dark-tom .tb-badge.discord) { background: #1a1b4b !important; color: #a5b4fc !important; border-color: #2a2b6b !important; }
+  :global(html.dark-tom .tb-badge.raspi)   { background: #3f0a1e !important; color: #f9a8c9 !important; border-color: #7a1535 !important; }
+  :global(html.dark-tom .tb-badge.meteo)   { background: #0a2030 !important; color: #7dd3fc !important; border-color: #0e3a55 !important; }
+  :global(html.dark-tom .tb-badge.jma)     { background: #0a2010 !important; color: #86efac !important; border-color: #14532d !important; }
+  :global(html.dark-tom .tb-badge.react)   { background: #0e3a55 !important; color: #7dd3fc !important; border-color: #0e3a55 !important; }
+  :global(html.dark-tom .tb-badge.pwa)     { background: #1a1b4b !important; color: #a5b4fc !important; border-color: #2a2b6b !important; }
+  :global(html.dark-tom .tb-badge.ytdlp)   { background: #3f0a0a !important; color: #fca5a5 !important; border-color: #601010 !important; }
+  :global(html.dark-tom .tb-badge.http)    { background: #0a2010 !important; color: #86efac !important; border-color: #14532d !important; }
+  :global(html.dark-tom .tb-badge.npm)     { background: #3f0a0a !important; color: #fca5a5 !important; border-color: #601010 !important; }
 
   :global(html.dark-tom .tb-link-btn) {
     background: linear-gradient(135deg, #1e1b3a, #231b50) !important;
