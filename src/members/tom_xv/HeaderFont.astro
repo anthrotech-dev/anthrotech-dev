@@ -2,39 +2,109 @@
 ---
 
 <script>
-  const FONT_ID = 'tb-dotgothic16-font';
-
-  if (!document.getElementById(FONT_ID)) {
-    const link = document.createElement('link');
-    link.id = FONT_ID;
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=DotGothic16&display=swap';
-    document.head.appendChild(link);
-  }
-
-  const title = document.querySelector('.member-header h1');
-  if (title instanceof HTMLElement) {
-    title.style.fontFamily = 'DotGothic16, sans-serif';
-    title.style.letterSpacing = '0.04em';
-    title.style.background = 'linear-gradient(135deg, #ef4444, #ec4899, #c026d3, #a855f7, #f43f5e)';
-    title.style.backgroundSize = '220% 220%';
-    title.style.animation = 'tb-name-gradient 6s ease infinite';
-    title.style.webkitBackgroundClip = 'text';
-    title.style.backgroundClip = 'text';
-    title.style.color = 'transparent';
-    title.style.webkitTextFillColor = 'transparent';
-  }
-
   if (!document.getElementById('tb-name-gradient-style')) {
     const style = document.createElement('style');
     style.id = 'tb-name-gradient-style';
     style.textContent = `
+      @font-face {
+        font-family: 'Zpix';
+        src: url('https://raw.githubusercontent.com/SolidZORO/zpix-pixel-font/master/website/zpix.woff2') format('woff2');
+        font-display: swap;
+      }
+
       @keyframes tb-name-gradient {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
       }
+
+      .tb-title-root {
+        font-family: 'Zpix', sans-serif;
+        letter-spacing: 0.04em;
+        white-space: normal;
+        line-height: 1.25;
+      }
+
+      .tb-title-gradient {
+        background: linear-gradient(135deg, #ef4444, #ec4899, #c026d3, #a855f7, #f43f5e);
+        background-size: 220% 220%;
+        animation: tb-name-gradient 6s ease infinite;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent !important;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .tb-title-line {
+        display: inline;
+      }
+
+      .tb-title-swap {
+        position: relative;
+        display: inline-grid;
+        vertical-align: baseline;
+        margin-left: 0.18em;
+      }
+
+      .tb-title-swap > span {
+        grid-area: 1 / 1;
+        transition: opacity 0.55s ease, transform 0.55s ease;
+        will-change: opacity, transform;
+      }
+
+      .tb-title-primary {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .tb-title-alt {
+        opacity: 0;
+        transform: translateY(0.55em);
+      }
+
+      .tb-title-swap.is-alt .tb-title-primary {
+        opacity: 0;
+        transform: translateY(-0.55em);
+      }
+
+      .tb-title-swap.is-alt .tb-title-alt {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 700px) {
+        .tb-title-line {
+          display: block;
+        }
+
+        .tb-title-swap {
+          display: grid;
+          margin-left: 0;
+          margin-top: 0.08em;
+        }
+      }
     `;
     document.head.appendChild(style);
+  }
+
+  const title = document.querySelector('.member-header h1');
+  if (title instanceof HTMLElement) {
+    title.classList.add('tb-title-root');
+    title.innerHTML = `
+      <span class="tb-title-line tb-title-gradient">トム |</span>
+      <span class="tb-title-swap" aria-label="Long Zixun または 龙 紫熏">
+        <span class="tb-title-primary tb-title-gradient">Long Zixun</span>
+        <span class="tb-title-alt tb-title-gradient">龙 紫熏</span>
+      </span>
+    `;
+
+    const swap = title.querySelector('.tb-title-swap');
+    if (swap instanceof HTMLElement) {
+      let alt = false;
+      setInterval(() => {
+        alt = !alt;
+        swap.classList.toggle('is-alt', alt);
+      }, 3800);
+    }
   }
 </script>
