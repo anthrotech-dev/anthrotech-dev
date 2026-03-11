@@ -150,6 +150,7 @@
 <script>
   // ===== 定数 =====
   const AVATAR_KEY   = 'tom-avatar-clicks';
+  const EGG_KEY      = 'tom-avatar-egg-enabled';
   const GRAVITY      = 0.38;
   const BOUNCE_COEF  = 0.30;
   const FLOOR_MARGIN = 45;
@@ -172,8 +173,9 @@
   }
 
   // ===== グローバル状態 =====
-  let count     = parseInt(localStorage.getItem(AVATAR_KEY) ?? '0', 10);
-  let ruinsMode = false;
+  let count      = parseInt(localStorage.getItem(AVATAR_KEY) ?? '0', 10);
+  let eggEnabled = localStorage.getItem(EGG_KEY) === '1';
+  let ruinsMode  = false;
   const physicsItems: PhysicsItem[] = [];
   let rafId: number | null = null;
   const EXPLOSION_SE_PATH = '/assets/tom_xv/explosion.mp3';
@@ -818,13 +820,54 @@
   if (memberHeader) {
     clickCounterEl = document.createElement('p');
     clickCounterEl.id = 'tom-click-counter';
-    clickCounterEl.textContent = count > 0 ? `🐾 無駄なクリック: ${count}回` : '';
+    clickCounterEl.textContent = eggEnabled
+      ? (count > 0 ? `🐾 無駄なクリック: ${count}回` : '🐾 イースターエッグ解放済み')
+      : '';
     memberHeader.insertAdjacentElement('afterend', clickCounterEl);
   }
 
   // ===== アバター設定 =====
   const avatar = document.querySelector('.avatar') as HTMLImageElement | null;
   const toast  = document.getElementById('tom-avatar-toast');
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function showToast(msg: string) {
+    if (!toast) return;
+    if (toastTimer) clearTimeout(toastTimer);
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    toastTimer = setTimeout(() => toast.classList.remove('visible'), 2800);
+  }
+
+  // ===== コナミコマンドでイースターエッグ解放 =====
+  const KONAMI = [
+    'ArrowUp', 'ArrowUp',
+    'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight',
+    'ArrowLeft', 'ArrowRight',
+    'b', 'a',
+  ];
+  let konamiIndex = 0;
+
+  window.addEventListener('keydown', (e) => {
+    if (eggEnabled) return;
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    const expected = KONAMI[konamiIndex];
+    if (key === expected) {
+      konamiIndex++;
+      if (konamiIndex === KONAMI.length) {
+        eggEnabled = true;
+        localStorage.setItem(EGG_KEY, '1');
+        konamiIndex = 0;
+        if (clickCounterEl) {
+          clickCounterEl.textContent = count > 0 ? `🐾 無駄なクリック: ${count}回` : '🐾 イースターエッグ解放済み';
+        }
+        showToast('🎮 イースターエッグ解放！');
+      }
+      return;
+    }
+    konamiIndex = key === KONAMI[0] ? 1 : 0;
+  });
 
   if (avatar) {
     const milestones: Record<number, string | null> = {
@@ -862,17 +905,8 @@
       setTimeout(() => el.remove(), 900);
     }
 
-    let toastTimer: ReturnType<typeof setTimeout> | null = null;
-    function showToast(msg: string) {
-      if (!toast) return;
-      if (toastTimer) clearTimeout(toastTimer);
-      toast.textContent = msg;
-      toast.classList.add('visible');
-      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2800);
-    }
-
     avatar.addEventListener('click', (e) => {
-      if (ruinsMode) return;
+      if (ruinsMode || !eggEnabled) return;
       count++;
       localStorage.setItem(AVATAR_KEY, String(count));
       if (clickCounterEl) {
@@ -891,7 +925,7 @@
   }
 
   // ===== 起動時チェック: 1000回以上ならそのまま残骸モードへ =====
-  if (count >= 1000) {
+  if (eggEnabled && count >= 1000) {
     initRuinsMode();
   }
 </script>
