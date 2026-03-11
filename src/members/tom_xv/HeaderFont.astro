@@ -1,0 +1,30 @@
+---
+---
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
+  .member-header h1 {
+    font-family: 'DotGothic16', sans-serif;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #ef4444, #ec4899, #c026d3, #a855f7, #f43f5e);
+    background-size: 220% 220%;
+    animation: tb-name-gradient 6s ease infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes tb-name-gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+</style>
