@@ -1,30 +1,40 @@
 ---
 ---
 
-<style is:global>
-  @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+<script>
+  const FONT_ID = 'tb-dotgothic16-font';
 
-  .member-header h1 {
-    font-family: 'DotGothic16', sans-serif;
-    letter-spacing: 0.04em;
-    background: linear-gradient(135deg, #ef4444, #ec4899, #c026d3, #a855f7, #f43f5e);
-    background-size: 220% 220%;
-    animation: tb-name-gradient 6s ease infinite;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+  if (!document.getElementById(FONT_ID)) {
+    const link = document.createElement('link');
+    link.id = FONT_ID;
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=DotGothic16&display=swap';
+    document.head.appendChild(link);
   }
 
-  @keyframes tb-name-gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+  const title = document.querySelector('.member-header h1');
+  if (title instanceof HTMLElement) {
+    title.style.fontFamily = 'DotGothic16, sans-serif';
+    title.style.letterSpacing = '0.04em';
+    title.style.background = 'linear-gradient(135deg, #ef4444, #ec4899, #c026d3, #a855f7, #f43f5e)';
+    title.style.backgroundSize = '220% 220%';
+    title.style.animation = 'tb-name-gradient 6s ease infinite';
+    title.style.webkitBackgroundClip = 'text';
+    title.style.backgroundClip = 'text';
+    title.style.color = 'transparent';
+    title.style.webkitTextFillColor = 'transparent';
   }
-</style>
+
+  if (!document.getElementById('tb-name-gradient-style')) {
+    const style = document.createElement('style');
+    style.id = 'tb-name-gradient-style';
+    style.textContent = `
+      @keyframes tb-name-gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+</script>
