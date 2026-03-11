@@ -49,6 +49,12 @@ const { name, avatar, description, href } = Astro.props;
         min-width: 0;
     }
 
+    @media (max-width: 1024px) {
+        .member-card {
+            width: calc(50% - 0.5rem);
+        }
+    }
+
     @media (max-width: 700px) {
         .member-card {
             width: 100%;
