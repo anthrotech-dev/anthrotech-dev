@@ -1,0 +1,66 @@
+---
+import '../css/ThemeToggle.css';
+---
+
+<button id="tom-theme-toggle" aria-label="ダーク/ライト切替" title="テーマ切替">
+  🌙
+</button>
+
+<div id="tom-theme-overlay" aria-hidden="true">
+  <span id="tom-theme-overlay-icon">🌙</span>
+  <span id="tom-theme-overlay-label">切り替え中…</span>
+</div>
+
+
+<script>
+  const btn = document.getElementById('tom-theme-toggle');
+  if (btn) {
+    const html = document.documentElement;
+    const DARK_CLASS = 'dark-tom';
+    const STORAGE_KEY = 'tom-theme';
+    let switching = false;
+
+    const apply = (dark: boolean) => {
+      html.classList.toggle(DARK_CLASS, dark);
+      btn.textContent = dark ? '☀️' : '🌙';
+    };
+
+    // デフォルトはダーク。明示的に 'light' が保存されている場合のみライトテーマ
+    apply(localStorage.getItem(STORAGE_KEY) !== 'light');
+
+    btn.addEventListener('click', () => {
+      if (switching) return;
+      switching = true;
+
+      const isDark = html.classList.contains(DARK_CLASS);
+      const overlay = document.getElementById('tom-theme-overlay') as HTMLElement | null;
+      const overlayIcon = document.getElementById('tom-theme-overlay-icon');
+
+      if (!overlay || !overlayIcon) {
+        apply(!isDark);
+        localStorage.setItem(STORAGE_KEY, isDark ? 'light' : 'dark');
+        switching = false;
+        return;
+      }
+
+      // オーバーレイを切り替え先テーマに合わせて準備
+      overlay.className = isDark ? 'to-light' : 'to-dark';
+      overlayIcon.textContent = isDark ? '☀️' : '🌙';
+
+      // フェードイン
+      overlay.classList.add('visible');
+
+      // オーバーレイが完全に表示されたらテーマを切り替え
+      setTimeout(() => {
+        localStorage.setItem(STORAGE_KEY, isDark ? 'light' : 'dark');
+        apply(!isDark);
+
+        // 少し間を置いてフェードアウト
+        setTimeout(() => {
+          overlay.classList.remove('visible');
+          setTimeout(() => { switching = false; }, 350);
+        }, 120);
+      }, 320);
+    });
+  }
+</script>

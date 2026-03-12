@@ -1,36 +1,3 @@
----
-const sponsorUrl = 'https://github.com/sponsors/TomXV';
-const avatarUrl = 'https://github.com/TomXV.png';
----
-
-<section class="tb-sponsor-card" aria-label="GitHub Sponsors">
-  <div class="tb-sponsor-avatar-wrap">
-    <img src={avatarUrl} alt="TomXV GitHub avatar" class="tb-sponsor-avatar" loading="lazy" />
-  </div>
-
-  <div class="tb-sponsor-main">
-    <div class="tb-sponsor-badge">GitHub Sponsors</div>
-    <h2 class="tb-sponsor-title">TomXV を支援する</h2>
-    <p class="tb-sponsor-text">
-      制作や開発活動を気に入ってくれたら、GitHub Sponsors から応援できます。
-    </p>
-  </div>
-
-  <div class="tb-sponsor-actions">
-    <a
-      href={sponsorUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="tb-sponsor-btn"
-      aria-label="Sponsor TomXV on GitHub Sponsors"
-    >
-      <span class="tb-sponsor-heart">❤</span>
-      <span class="tb-sponsor-font">Sponsor</span>
-    </a>
-  </div>
-</section>
-
-<style>
   .tb-sponsor-card {
     display: flex;
     align-items: center;
@@ -183,35 +150,34 @@ const avatarUrl = 'https://github.com/TomXV.png';
     }
   }
 
-  :global(html.dark-tom) .tb-sponsor-card {
+  html.dark-tom .tb-sponsor-card {
     background: linear-gradient(135deg, #1b1833, #20193f 55%, #2a1f56);
     border-color: #4c3d8a;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
   }
 
-  :global(html.dark-tom) .tb-sponsor-avatar {
+  html.dark-tom .tb-sponsor-avatar {
     border-color: rgba(196, 181, 253, 0.35);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
     background: #18152f;
   }
 
-  :global(html.dark-tom) .tb-sponsor-badge {
+  html.dark-tom .tb-sponsor-badge {
     color: #f9a8d4;
     background: rgba(157, 23, 77, 0.18);
     border-color: rgba(249, 168, 212, 0.32);
   }
 
-  :global(html.dark-tom) .tb-sponsor-title {
+  html.dark-tom .tb-sponsor-title {
     color: #e9ddff;
   }
 
-  :global(html.dark-tom) .tb-sponsor-text {
+  html.dark-tom .tb-sponsor-text {
     color: #b8abd9;
   }
 
-  :global(html.dark-tom) .tb-sponsor-btn {
+  html.dark-tom .tb-sponsor-btn {
     background: linear-gradient(135deg, #ec4899, #8b5cf6, #d946ef, #7c3aed);
     background-size: 220% 220%;
     box-shadow: 0 10px 22px rgba(139, 92, 246, 0.24);
   }
-</style>

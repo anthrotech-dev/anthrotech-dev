@@ -1,0 +1,33 @@
+---
+const sponsorUrl = 'https://github.com/sponsors/TomXV';
+const avatarUrl = 'https://github.com/TomXV.png';
+import '../css/SponsorCard.css';
+---
+
+<section class="tb-sponsor-card" aria-label="GitHub Sponsors">
+  <div class="tb-sponsor-avatar-wrap">
+    <img src={avatarUrl} alt="TomXV GitHub avatar" class="tb-sponsor-avatar" loading="lazy" />
+  </div>
+
+  <div class="tb-sponsor-main">
+    <div class="tb-sponsor-badge">GitHub Sponsors</div>
+    <h2 class="tb-sponsor-title">TomXV を支援する</h2>
+    <p class="tb-sponsor-text">
+      制作や開発活動を気に入ってくれたら、GitHub Sponsors から応援できます。
+    </p>
+  </div>
+
+  <div class="tb-sponsor-actions">
+    <a
+      href={sponsorUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="tb-sponsor-btn"
+      aria-label="Sponsor TomXV on GitHub Sponsors"
+    >
+      <span class="tb-sponsor-heart">❤</span>
+      <span class="tb-sponsor-font">Sponsor</span>
+    </a>
+  </div>
+</section>
+
