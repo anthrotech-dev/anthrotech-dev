@@ -1,0 +1,65 @@
+---
+---
+
+<style is:global>
+  @keyframes tom-bg-flow {
+    0%   { background-position: 0% 50%, center, center; }
+    50%  { background-position: 100% 50%, center, center; }
+    100% { background-position: 0% 50%, center, center; }
+  }
+
+  /* 固定レイヤーを廃止し、body背景だけで完結させる（表示崩れ防止） */
+  body:has([data-tom-backdrop]) {
+    background-image:
+      linear-gradient(135deg,
+        rgba(67, 56, 202, 0.30),
+        rgba(79, 70, 229, 0.26),
+        rgba(109, 40, 217, 0.30),
+        rgba(126, 34, 206, 0.26),
+        rgba(168, 85, 247, 0.30),
+        rgba(109, 40, 217, 0.26),
+        rgba(67, 56, 202, 0.30)
+      ),
+      linear-gradient(180deg, rgba(245, 243, 255, 0.42) 0%, rgba(238, 232, 255, 0.24) 100%),
+      url('/assets/tom_xv/city-bg.png');
+    background-size: 320% 320%, 100% 100%, cover;
+    background-position: 0% 50%, center, center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: tom-bg-flow 14s ease infinite;
+  }
+
+  html.dark-tom body:has([data-tom-backdrop]) {
+    background-image:
+      linear-gradient(135deg,
+        rgba(67, 56, 202, 0.26),
+        rgba(79, 70, 229, 0.22),
+        rgba(109, 40, 217, 0.26),
+        rgba(126, 34, 206, 0.22),
+        rgba(168, 85, 247, 0.26),
+        rgba(109, 40, 217, 0.22),
+        rgba(67, 56, 202, 0.26)
+      ),
+      linear-gradient(180deg, rgba(10, 10, 22, 0.52) 0%, rgba(14, 10, 30, 0.66) 100%),
+      url('/assets/tom_xv/city-bg.png');
+    background-size: 320% 320%, 100% 100%, cover;
+    background-position: 0% 50%, center, center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: tom-bg-flow 14s ease infinite;
+  }
+
+  /* ThemeToggle側の暗背景疑似要素は無効化 */
+  html.dark-tom body:has([data-tom-backdrop])::before {
+    background: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body:has([data-tom-backdrop]),
+    html.dark-tom body:has([data-tom-backdrop]) {
+      animation: none;
+    }
+  }
+</style>
+
+<div data-tom-backdrop hidden></div>

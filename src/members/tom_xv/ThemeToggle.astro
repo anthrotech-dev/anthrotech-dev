@@ -94,16 +94,59 @@
   /* ===== DARK MODE OVERRIDES ===== */
 
   :global(html.dark-tom) {
-    background-color: #0d0d1a !important;
+    background: linear-gradient(180deg, #0f0d18 0%, #161126 46%, #1d1530 100%) !important;
     color: #d4d4e8 !important;
   }
 
-  :global(html.dark-tom body),
-  :global(html.dark-tom #main),
-  :global(html.dark-tom #sidebar),
-  :global(html.dark-tom #wrap) {
-    background-color: #0d0d1a;
+  :global(html.dark-tom body) {
+    position: relative;
+    background: transparent;
     color: #d4d4e8;
+  }
+
+  :global(html.dark-tom body::before) {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at 12% 8%, rgba(192, 38, 211, 0.14), transparent 28%),
+      radial-gradient(circle at 88% 10%, rgba(79, 70, 229, 0.18), transparent 26%),
+      linear-gradient(180deg, #0f0d18 0%, #161126 46%, #1d1530 100%);
+  }
+
+  :global(html.dark-tom #wrap),
+  :global(html.dark-tom #main) {
+    background: transparent;
+    color: #d4d4e8;
+  }
+
+  /* Layout.astro で除外したサイドバー幅調整を TomXV 配下に限定して適用 */
+  :global(body:has([data-tom-backdrop]) #sidebar) {
+    width: auto;
+  }
+
+  :global(#sidebar) {
+    border-radius: 16px;
+    padding: 0.65rem;
+    box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    margin-bottom: 6.5rem;
+    margin-top: 1.2rem;
+  }
+
+  :global(html:not(.dark-tom) #sidebar) {
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(139, 92, 246, 0.24);
+    color: #3f3366;
+  }
+
+  :global(html.dark-tom #sidebar) {
+    background: rgba(20, 16, 34, 0.62);
+    border: 1px solid rgba(167, 139, 250, 0.34);
+    color: #d4d4e8;
+    box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.58);
   }
 
   :global(html.dark-tom article) {
@@ -148,6 +191,11 @@
   }
 
   /* サイドバー */
+
+  :global(html.dark-tom #logo) {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  }
+
   :global(html.dark-tom #title) {
     color: #e2e0ff !important;
   }
