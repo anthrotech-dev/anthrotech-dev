@@ -1,0 +1,58 @@
+---
+const links = [
+  {
+    name: '自己紹介カード',
+    url: 'https://lit.link/TomXV',
+    display: 'lit.link/TomXV',
+    favicon: 'https://www.google.com/s2/favicons?domain=https://lit.link&sz=64',
+  },
+  {
+    name: 'ウェブサイト',
+    url: 'https://mypage.x2rn.net',
+    display: 'mypage.x2rn.net',
+    emoji: '🌐',
+  },
+  {
+    name: 'Twitter / X',
+    url: 'https://twitter.x2rn.net',
+    display: 'twitter.x2rn.net',
+    favicon: 'https://www.google.com/s2/favicons?domain=https://x.com&sz=64',
+  },
+  {
+    name: 'GitHub',
+    url: 'https://github.x2rn.net',
+    display: 'github.x2rn.net',
+    favicon: 'https://www.google.com/s2/favicons?domain=https://github.com&sz=64',
+  },
+  {
+    name: 'コンカレ',
+    url: 'https://concrnt.world/lugiaxetomxv.net',
+    display: 'concrnt.world',
+    favicon: 'https://www.google.com/s2/favicons?domain=https://concrnt.world&sz=64',
+  },
+];
+import '../css/ProfileLinks.css';
+---
+
+<section class="links-section">
+  <h2 class="section-title">各種リンク</h2>
+  <div class="links-grid">
+    {links.map((link) => (
+      <a href={link.url} class="link-card" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">
+          {link.favicon ? (
+            <img src={link.favicon} alt="" class="link-favicon" loading="lazy" />
+          ) : (
+            <span class="link-emoji" aria-hidden="true">{link.emoji}</span>
+          )}
+        </span>
+        <div class="link-body">
+          <span class="link-name">{link.name}</span>
+          <span class="link-url">{link.display}</span>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+    ))}
+  </div>
+</section>
+
