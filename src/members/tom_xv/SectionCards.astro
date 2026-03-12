@@ -1,0 +1,69 @@
+---
+---
+
+<style is:global>
+  html.dark-tom,
+  html.dark-tom body,
+  html.dark-tom #wrap,
+  html.dark-tom #main,
+  html.dark-tom article {
+    background-color: transparent !important;
+  }
+
+  html.dark-tom #main,
+  html.dark-tom article {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  body:has([data-tom-backdrop]) article {
+    display: block;
+    padding: 1rem !important;
+    border: 1px solid rgba(180, 160, 240, 0.35) !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, 0.36) !important;
+    box-shadow: 0 18px 28px -20px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  html.dark-tom body:has([data-tom-backdrop]) article {
+    border-color: rgba(167, 139, 250, 0.34) !important;
+    background: rgba(20, 16, 34, 0.42) !important;
+  }
+
+  .tom-section-card {
+    margin-top: 0;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 14px 22px -16px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(8px) saturate(115%);
+    -webkit-backdrop-filter: blur(8px) saturate(115%);
+    overflow: hidden;
+  }
+
+  .tom-section-card + .tom-section-card {
+    margin-top: 0.75rem;
+  }
+
+  .tom-section-card h2 {
+    margin-top: 0;
+  }
+
+  html.dark-tom .tom-section-card {
+    background: rgba(31, 27, 46, 0.76);
+    border-color: rgba(167, 139, 250, 0.42);
+    box-shadow: 0 16px 24px -16px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+
+  @media (max-width: 700px) {
+    .tom-section-card {
+      padding: 0.9rem;
+      border-radius: 14px;
+    }
+  }
+</style>

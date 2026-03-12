@@ -11,20 +11,28 @@ import ThemeToggle from './ThemeToggle.astro'
 import AvatarEgg from './AvatarEgg.astro'
 import SponsorCard from './SponsorCard.astro'
 import HeaderFont from './HeaderFont.astro'
+import PageBackdrop from './PageBackdrop.astro'
+import SectionCards from './SectionCards.astro'
 import PortfolioCards from './portfolio/PortfolioCards.astro'
 import './portfolio/portfolio.css'
 
 <ThemeToggle />
 <AvatarEgg />
 <HeaderFont />
-<ProfileLinks />
+<PageBackdrop />
+<SectionCards />
 
-## Sponsor
+<div class="tom-section-card">
+  <ProfileLinks />
+</div>
 
-<p>活動を気に入ってくれたら、GitHub Sponsors で支援できます。</p>
+<div class="tom-section-card">
+  <h2>Sponsor</h2>
+  <p>活動を気に入ってくれたら、GitHub Sponsors で支援できます。</p>
+  <SponsorCard />
+</div>
 
-<SponsorCard />
-
-## ポートフォリオ
-
-<PortfolioCards />
+<div class="tom-section-card">
+  <h2>ポートフォリオ</h2>
+  <PortfolioCards />
+</div>
