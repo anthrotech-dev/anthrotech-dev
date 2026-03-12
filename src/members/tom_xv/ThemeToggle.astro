@@ -126,7 +126,7 @@
     width: auto;
   }
 
-  :global(#sidebar) {
+  :global(body:has([data-tom-backdrop]) #sidebar) {
     border-radius: 16px;
     padding: 0.65rem;
     box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.28);
@@ -136,13 +136,13 @@
     margin-top: 1.2rem;
   }
 
-  :global(html:not(.dark-tom) #sidebar) {
+  :global(html:not(.dark-tom) body:has([data-tom-backdrop]) #sidebar) {
     background: rgba(255, 255, 255, 0.58);
     border: 1px solid rgba(139, 92, 246, 0.24);
     color: #3f3366;
   }
 
-  :global(html.dark-tom #sidebar) {
+  :global(html.dark-tom body:has([data-tom-backdrop]) #sidebar) {
     background: rgba(20, 16, 34, 0.62);
     border: 1px solid rgba(167, 139, 250, 0.34);
     color: #d4d4e8;
@@ -192,15 +192,15 @@
 
   /* サイドバー */
 
-  :global(html.dark-tom #logo) {
+  :global(html.dark-tom body:has([data-tom-backdrop]) #logo) {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
   }
 
-  :global(html.dark-tom #title) {
+  :global(html.dark-tom body:has([data-tom-backdrop]) #title) {
     color: #e2e0ff !important;
   }
 
-  :global(html.dark-tom #sidebar a) {
+  :global(html.dark-tom body:has([data-tom-backdrop]) #sidebar a) {
     color: #a78bfa !important;
   }
 
