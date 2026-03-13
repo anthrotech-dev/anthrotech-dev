@@ -7,4 +7,10 @@ import react from '@astrojs/react';
 export default defineConfig({
   site: 'https://anthrotech.dev',
   integrations: [mdx(), react()],
+  markdown: {
+    shikiConfig: {
+      theme: 'github-dark',
+      wrap: true,
+    },
+  },
 });
