@@ -1,0 +1,36 @@
+---
+title: sample
+description: tom_xv のコードブロック表示サンプル
+---
+
+# sample
+
+このページでは、言語名付きコードブロックのシンタックスハイライトを確認できます。
+
+## TypeScript
+
+```ts
+type Member = {
+  id: string;
+  displayName: string;
+  tags: string[];
+};
+
+const member: Member = {
+  id: "tom_xv",
+  displayName: "Tom XV",
+  tags: ["syntax-highlight", "astro", "mdx"],
+};
+
+console.log(`${member.displayName}: ${member.tags.join(", ")}`);
+```
+
+## JavaScript
+
+```js
+const greet = (name) => {
+  return `Hello, ${name}!`;
+};
+
+console.log(greet("Anthrotech"));
+```

@@ -94,6 +94,22 @@ pre {
     overflow-x: auto;
 }
 
+:global(pre.astro-code) {
+    padding: 1rem 1.1rem;
+    border-radius: 0.6rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    line-height: 1.6;
+    background-color: #000 !important;
+    color: #f5f5f5 !important;
+}
+
+:global(pre.astro-code code) {
+    display: block;
+    font-size: 0.95rem;
+    font-family: "SFMono-Regular", "Consolas", "Menlo", monospace;
+}
+
 article img {
     max-width: 100%;
     display: block;
