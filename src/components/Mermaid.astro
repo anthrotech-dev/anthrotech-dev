@@ -1,0 +1,21 @@
+---
+interface Props {
+  chart: string;
+}
+
+const { chart } = Astro.props;
+---
+
+<div class="mermaid" data-mermaid-source={chart}>{chart}</div>
+
+<style>
+  .mermaid {
+    margin: 0.75rem 0;
+    overflow-x: auto;
+  }
+
+  .mermaid svg {
+    height: auto;
+    display: block;
+  }
+</style>
