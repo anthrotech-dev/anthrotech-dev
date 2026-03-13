@@ -31,13 +31,18 @@ const defaultDescription = 'Anthrotechは、ケモノ好き x 技術好き な�
 	<body>
         <div id="wrap">
             {Astro.url.pathname != "/" &&
-            <div id="sidebar">
-                <a id="header" href="/">
-                    <img id="logo" src="/favicon.svg" alt="Anthrotech Logo" />
-                    <span id="title">Anthrotech</span>
-                </a>
-                <FileTree />
+            <div id="sidebar" data-sidebar-parent>
+                <div data-sidebar-child="header">
+                    <a id="header" href="/">
+                        <img id="logo" src="/favicon.svg" alt="Anthrotech Logo" />
+                        <span id="title">Anthrotech</span>
+                    </a>
+                </div>
+                <div data-sidebar-child="tree">
+                    <FileTree />
+                </div>
             </div>
+
             }
             <div id="main">
                 <slot />
@@ -166,7 +171,21 @@ body {
 
 #sidebar {
     width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    min-height: 100dvh;
+    padding: 20px 0;
+    box-sizing: border-box;
+}
+
+[data-sidebar-child="tree"] {
+    width: 100%;
+    flex: 1;
+    overflow-x: auto;
     overflow-y: auto;
+    min-height: 0;
+    margin-bottom: 61px;
 }
 
 #header {
@@ -209,6 +228,7 @@ body {
     flex: 1;
     min-height: 100dvh;
     padding: 20px 0;
+    box-sizing: border-box;
 }
 
 #footer {
@@ -235,4 +255,3 @@ body {
 }
 
 </style>
-
