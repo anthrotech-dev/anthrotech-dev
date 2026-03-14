@@ -1,14 +1,20 @@
 <script is:inline>
   (() => {
+    // プレビュー用モーダルのシングルトン参照
     let previewModal;
 
+    // Mermaid本体を一度だけ読み込み、初期化済みインスタンスを返す
     const ensureMermaidScript = async () => {
+      // 既にロード済みなら即返す（重複ロード防止）
       if (window.mermaid) return window.mermaid;
-      if (window.__anthrotechMermaidLoader) return window.__anthrotechMermaidLoader;
+      // 他処理がロード中なら同じPromiseを待つ
+      if (window.__anthrotechMermaidLoader)
+        return window.__anthrotechMermaidLoader;
 
       window.__anthrotechMermaidLoader = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "https://cdn.docbase.io/mermaid@11.6.0/dist/mermaid.min.js";
+        script.src =
+          "https://cdn.docbase.io/mermaid@11.6.0/dist/mermaid.min.js";
         script.async = true;
 
         script.onload = () => {
@@ -37,11 +43,13 @@
       return window.__anthrotechMermaidLoader;
     };
 
+    // MarkdownのMermaidコードブロックを描画対象(.mermaid)へ変換する
     const upgradeCodeBlocks = () => {
       const blocks = document.querySelectorAll(
-        'pre[data-language="mermaid"], pre > code.language-mermaid'
+        'pre[data-language="mermaid"], pre > code.language-mermaid',
       );
 
+      // 候補ブロックを順番に変換していく
       for (const block of blocks) {
         const pre =
           block instanceof HTMLPreElement
@@ -50,11 +58,17 @@
               ? block.parentElement
               : null;
 
-        if (!(pre instanceof HTMLElement) || pre.dataset.mermaidUpgraded === "1") continue;
+        if (
+          !(pre instanceof HTMLElement) ||
+          pre.dataset.mermaidUpgraded === "1"
+        )
+          continue;
 
         const chart = pre.textContent?.trimEnd();
+        // 空ブロックは描画しない
         if (!chart) continue;
 
+        // <pre> を描画用の .mermaid コンテナへ置き換える
         const container = document.createElement("div");
         container.className = "mermaid";
         container.textContent = chart;
@@ -64,9 +78,12 @@
       }
     };
 
+    // 図の拡大表示モーダルを生成/再利用して返す
     const ensurePreviewModal = () => {
+      // 2回目以降は既存インスタンスを再利用
       if (previewModal) return previewModal;
 
+      // モーダルのルート要素を生成（初回のみDOMに追加）
       const root = document.createElement("div");
       root.className = "mermaid-preview";
       root.hidden = true;
@@ -86,17 +103,22 @@
         </div>
       `;
 
+      // 主要DOM参照をキャッシュ（毎回queryしないため）
       const viewport = root.querySelector(".mermaid-preview__viewport");
       const canvas = root.querySelector(".mermaid-preview__canvas");
+      // 表示状態の初期値（ズーム率・平行移動量）
       let scale = 1;
       let offsetX = 0;
       let offsetY = 0;
+      // ポインタ操作の一時状態（ドラッグ/ピンチ）
       let dragState = null;
       let pinchState = null;
+      // SVGの元サイズ（拡大縮小計算の基準）
       let baseWidth = 0;
       let baseHeight = 0;
       let previewSvg = null;
 
+      // 現在のズーム率(scale)に合わせてSVGサイズを同期する
       const syncSvgSize = () => {
         if (!(previewSvg instanceof SVGElement)) return;
         if (!baseWidth || !baseHeight) return;
@@ -111,12 +133,14 @@
         previewSvg.style.maxWidth = "none";
       };
 
+      // パン移動量(offsetX/offsetY)をキャンバスへ反映する
       const applyTransform = () => {
         if (!(canvas instanceof HTMLElement)) return;
         canvas.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
         syncSvgSize();
       };
 
+      // ビューポートの有効表示領域(内寸と余白)を取得する
       const getViewportMetrics = () => {
         if (!(viewport instanceof HTMLElement)) {
           return {
@@ -134,13 +158,20 @@
         const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
 
         return {
-          innerWidth: Math.max(viewport.clientWidth - paddingLeft - paddingRight, 0),
-          innerHeight: Math.max(viewport.clientHeight - paddingTop - paddingBottom, 0),
+          innerWidth: Math.max(
+            viewport.clientWidth - paddingLeft - paddingRight,
+            0,
+          ),
+          innerHeight: Math.max(
+            viewport.clientHeight - paddingTop - paddingBottom,
+            0,
+          ),
           paddingLeft,
           paddingTop,
         };
       };
 
+      // 現在スケールの図をビューポート中央へ配置する
       const centerView = () => {
         if (!(viewport instanceof HTMLElement)) return;
         if (!baseWidth || !baseHeight) return;
@@ -149,15 +180,14 @@
         const scaledWidth = baseWidth * scale;
         const scaledHeight = baseHeight * scale;
 
-        offsetX = scaledWidth <= innerWidth
-          ? (innerWidth - scaledWidth) / 2
-          : 0;
-        offsetY = scaledHeight <= innerHeight
-          ? (innerHeight - scaledHeight) / 2
-          : 0;
+        offsetX =
+          scaledWidth <= innerWidth ? (innerWidth - scaledWidth) / 2 : 0;
+        offsetY =
+          scaledHeight <= innerHeight ? (innerHeight - scaledHeight) / 2 : 0;
         applyTransform();
       };
 
+      // 図全体が収まる初期ズーム率(Fit)を計算する
       const getFitScale = () => {
         if (!(viewport instanceof HTMLElement)) return 1;
         if (!baseWidth || !baseHeight) return 1;
@@ -165,9 +195,14 @@
         const { innerWidth, innerHeight } = getViewportMetrics();
         const availableWidth = Math.max(innerWidth, 1);
         const availableHeight = Math.max(innerHeight, 1);
-        return Math.min(1, availableWidth / baseWidth, availableHeight / baseHeight);
+        return Math.min(
+          1,
+          availableWidth / baseWidth,
+          availableHeight / baseHeight,
+        );
       };
 
+      // プレビューを閉じ、内部状態(ズーム/位置/ドラッグ)を初期化する
       const closePreview = () => {
         root.hidden = true;
         document.body.classList.remove("mermaid-preview-open");
@@ -185,6 +220,7 @@
         baseHeight = 0;
       };
 
+      // 指定原点を基準にズーム率を更新し、位置ずれを補正する
       const applyScale = (nextScale, originX = 0, originY = 0) => {
         const clampedScale = Math.min(3, Math.max(0.5, nextScale));
         const ratio = clampedScale / scale;
@@ -194,11 +230,13 @@
         applyTransform();
       };
 
+      // 画面中央基準でズーム率だけ更新する
       const applyScaleCentered = (nextScale) => {
         scale = Math.min(3, Math.max(0.5, nextScale));
         centerView();
       };
 
+      // 画面座標(client)をビューポート内座標へ変換する
       const getViewportPoint = (clientX, clientY) => {
         if (!(viewport instanceof HTMLElement)) {
           return { x: 0, y: 0 };
@@ -212,6 +250,7 @@
         };
       };
 
+      // 全体表示(Fit)に戻す
       const resetView = () => {
         scale = getFitScale();
         dragState = null;
@@ -219,6 +258,7 @@
         centerView();
       };
 
+      // 実寸(100%)表示に戻す
       const showActualSize = () => {
         scale = 1;
         dragState = null;
@@ -226,6 +266,7 @@
         centerView();
       };
 
+      // 2本指タッチ間の距離を返す(ピンチ判定用)
       const touchDistance = (touches) => {
         if (touches.length < 2) return 0;
         const dx = touches[0].clientX - touches[1].clientX;
@@ -233,15 +274,18 @@
         return Math.hypot(dx, dy);
       };
 
+      // 2本指タッチの中点座標を返す
       const touchCenter = (touches) => ({
         x: (touches[0].clientX + touches[1].clientX) / 2,
         y: (touches[0].clientY + touches[1].clientY) / 2,
       });
 
+      // ツールバー操作と backdrop クリックを1つのイベントで委譲処理する
       root.addEventListener("click", (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
 
+        // backdrop / Close ボタンからの閉じる操作
         if (target.dataset.close === "1") {
           closePreview();
           return;
@@ -257,16 +301,24 @@
         if (target.dataset.action === "reset") resetView();
       });
 
+      // モーダル表示中のみ Escape で閉じる
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && !root.hidden) {
           closePreview();
         }
       });
 
+      // マウス/タッチ操作によるパン・ズーム入力をビューポートへ登録
       if (viewport instanceof HTMLElement) {
         viewport.addEventListener("pointerdown", (event) => {
-          if (root.hidden || event.pointerType === "touch" || event.button !== 0) return;
+          if (
+            root.hidden ||
+            event.pointerType === "touch" ||
+            event.button !== 0
+          )
+            return;
 
+          // ドラッグ開始時点の座標と原点オフセットを保存
           dragState = {
             startX: event.clientX,
             startY: event.clientY,
@@ -277,7 +329,8 @@
         });
 
         viewport.addEventListener("pointermove", (event) => {
-          if (root.hidden || event.pointerType === "touch" || !dragState) return;
+          if (root.hidden || event.pointerType === "touch" || !dragState)
+            return;
 
           offsetX = dragState.originX + (event.clientX - dragState.startX);
           offsetY = dragState.originY + (event.clientY - dragState.startY);
@@ -300,17 +353,23 @@
           dragState = null;
         });
 
+        // ホイール位置を基準に拡大縮小（カーソル中心ズーム）
         viewport.addEventListener(
           "wheel",
           (event) => {
             if (root.hidden) return;
             event.preventDefault();
             const point = getViewportPoint(event.clientX, event.clientY);
-            applyScale(scale + (event.deltaY < 0 ? 0.12 : -0.12), point.x, point.y);
+            applyScale(
+              scale + (event.deltaY < 0 ? 0.12 : -0.12),
+              point.x,
+              point.y,
+            );
           },
-          { passive: false }
+          { passive: false },
         );
 
+        // タッチ操作: 1本指=パン、2本指=ピンチズーム開始
         viewport.addEventListener(
           "touchstart",
           (event) => {
@@ -318,6 +377,7 @@
 
             if (event.touches.length === 1) {
               const touch = event.touches[0];
+              // ドラッグ開始時点の座標と原点オフセットを保存
               dragState = {
                 startX: touch.clientX,
                 startY: touch.clientY,
@@ -330,6 +390,7 @@
             if (event.touches.length === 2) {
               const center = touchCenter(event.touches);
               const point = getViewportPoint(center.x, center.y);
+              // ピンチ開始時の距離と基準スケールを保存
               pinchState = {
                 startDistance: touchDistance(event.touches),
                 startScale: scale,
@@ -340,7 +401,7 @@
               event.preventDefault();
             }
           },
-          { passive: false }
+          { passive: false },
         );
 
         viewport.addEventListener(
@@ -364,12 +425,12 @@
               applyScale(
                 pinchState.startScale * ratio,
                 point.x || pinchState.centerX,
-                point.y || pinchState.centerY
+                point.y || pinchState.centerY,
               );
               event.preventDefault();
             }
           },
-          { passive: false }
+          { passive: false },
         );
 
         viewport.addEventListener("touchend", () => {
@@ -388,7 +449,7 @@
           (event) => {
             if (!root.hidden) event.preventDefault();
           },
-          { passive: false }
+          { passive: false },
         );
 
         viewport.addEventListener(
@@ -396,13 +457,16 @@
           (event) => {
             if (!root.hidden) event.preventDefault();
           },
-          { passive: false }
+          { passive: false },
         );
       }
 
+      // 初回生成したモーダルDOMを document.body に接続
       document.body.appendChild(root);
 
+      // 外部公開インターフェースを生成（openのみ）
       previewModal = {
+        // 指定SVGを複製してモーダルに表示し、初期ズームを適用する
         open(source) {
           if (!(canvas instanceof HTMLElement)) return;
           canvas.replaceChildren(source.cloneNode(true));
@@ -411,7 +475,8 @@
             const viewBox = previewSvg.viewBox?.baseVal;
             const rect = previewSvg.getBoundingClientRect();
             baseWidth = viewBox && viewBox.width ? viewBox.width : rect.width;
-            baseHeight = viewBox && viewBox.height ? viewBox.height : rect.height;
+            baseHeight =
+              viewBox && viewBox.height ? viewBox.height : rect.height;
             if (!baseWidth || !baseHeight) {
               baseWidth = rect.width || 1;
               baseHeight = rect.height || 1;
@@ -429,16 +494,23 @@
       return previewModal;
     };
 
+    // 描画済みMermaid図にプレビュー起動イベントをバインドする
     const setupPreviewTriggers = () => {
       const nodes = document.querySelectorAll(".mermaid");
 
+      // 描画済みフラグを立てて再描画を防ぐ
       for (const node of nodes) {
-        if (!(node instanceof HTMLElement) || node.dataset.mermaidPreviewBound === "1") continue;
+        if (
+          !(node instanceof HTMLElement) ||
+          node.dataset.mermaidPreviewBound === "1"
+        )
+          continue;
 
         node.tabIndex = 0;
         node.setAttribute("role", "button");
         node.setAttribute("aria-label", "Open Mermaid preview");
 
+        // サムネイル内のSVGを複製してモーダル表示する
         const openPreview = () => {
           const svg = node.querySelector("svg");
           if (!(svg instanceof SVGElement)) return;
@@ -457,18 +529,27 @@
       }
     };
 
+    // Mermaid描画のメイン処理(変換→描画→フラグ付与→イベント設定)
     const renderMermaid = async () => {
       upgradeCodeBlocks();
 
-      const nodes = Array.from(document.querySelectorAll(".mermaid")).filter((node) => {
-        return node instanceof HTMLElement && node.dataset.mermaidRendered !== "1";
-      });
+      // 未描画ノードのみ抽出（再描画・重複描画を防ぐ）
+      const nodes = Array.from(document.querySelectorAll(".mermaid")).filter(
+        (node) => {
+          return (
+            node instanceof HTMLElement && node.dataset.mermaidRendered !== "1"
+          );
+        },
+      );
 
+      // 対象がなければ何もしない
       if (nodes.length === 0) return;
 
+      // Mermaidインスタンスを取得して対象ノードを一括描画
       const mermaid = await ensureMermaidScript();
       await mermaid.run({ nodes });
 
+      // 描画済みフラグを立てて再描画を防ぐ
       for (const node of nodes) {
         if (!(node instanceof HTMLElement)) continue;
         node.dataset.mermaidRendered = "1";
@@ -477,12 +558,14 @@
       setupPreviewTriggers();
     };
 
+    // エントリーポイント。描画処理を安全に開始する
     const start = () => {
       renderMermaid().catch((error) => {
         console.error("[Mermaid] render failed", error);
       });
     };
 
+    // 初回読み込み時のみDOMContentLoadedを待って開始
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", start, { once: true });
       return;
@@ -560,8 +643,11 @@
     touch-action: none;
     overscroll-behavior: contain;
     cursor: grab;
-    background:
-      radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.25) 1px, transparent 0);
+    background: radial-gradient(
+      circle at 1px 1px,
+      rgb(148 163 184 / 0.25) 1px,
+      transparent 0
+    );
     background-size: 18px 18px;
   }
 

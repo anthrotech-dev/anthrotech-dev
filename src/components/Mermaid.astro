@@ -1,9 +1,14 @@
 ---
 interface Props {
+  // Mermaid記法の生テキスト
   chart: string;
 }
 
+// 親から渡されたチャート定義をそのまま描画対象へ流す
 const { chart } = Astro.props;
+
+// MermaidLoader.astro がこの .mermaid 要素を検出して SVG へ変換する
+// 横長図対応のため、下の style で overflow-x を有効化している
 ---
 
 <div class="mermaid" data-mermaid-source={chart}>{chart}</div>
