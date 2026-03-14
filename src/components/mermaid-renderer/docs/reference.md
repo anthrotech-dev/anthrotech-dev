@@ -33,7 +33,7 @@
 
 補足:
 
-- Markdown の ```` ```mermaid ```` コードブロックを `.mermaid` に変換した場合、生成要素は `data-mermaid-source` を持たない
+- Markdown の ` ```mermaid ` コードブロックを `.mermaid` に変換した場合、生成要素は `data-mermaid-source` を持たない
 - レンダラーは初回ロード時に 1 回起動する
 - 動的に追加された `.mermaid` 要素は自動再走査されない
 
@@ -72,7 +72,8 @@ interface Props {
 
 ### 4.1 依存読み込み
 
-- CDN: `https://cdn.docbase.io/mermaid@11.6.0/dist/mermaid.min.js`
+- CDN: `https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js`
+- Mermaid 公式ドキュメントで案内されている jsDelivr を利用する
 - シングルトン Promise (`window.__anthrotechMermaidLoader`) を利用して重複ロードを防止
 - 既に `window.mermaid` が存在する場合は再利用
 
@@ -202,7 +203,7 @@ import Mermaid from "../components/mermaid-renderer/src/Mermaid.astro";
 
 - Mermaid バージョン差異で一部記法互換性が変わる可能性あり
 - 極端に巨大な図はブラウザ描画負荷が高くなる
-- Mermaid スクリプト取得先は CDN 依存のため、読み込み失敗時は描画されない
+- CDN 依存のため、ネットワーク障害や配信障害時は描画されない
 - ボタンのズーム操作は中央基準で再配置され、ホイールとピンチは操作位置基準で拡大縮小される
 
 ---
