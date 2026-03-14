@@ -17,6 +17,9 @@ importers:
       astro:
         specifier: ^5.9.2
         version: 5.9.2(@types/node@24.0.0)(rollup@4.42.0)(typescript@5.8.3)
+      astro-mermaid-renderer:
+        specifier: ^0.1.2
+        version: 0.1.2(astro@5.9.2(@types/node@24.0.0)(rollup@4.42.0)(typescript@5.8.3))(typescript@5.8.3)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -687,6 +690,12 @@ packages:
   astring@1.9.0:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
+
+  astro-mermaid-renderer@0.1.2:
+    resolution: {integrity: sha512-aHzer4umAAE7mqHPqjv4ReJsYHzA16DqYkMBF8YdTHw56zhhdkls+BXMlwrqhKt0BtXEnD/X/AlFYlR64HUibw==}
+    peerDependencies:
+      astro: '>=4.0.0'
+      typescript: ^5
 
   astro@5.9.2:
     resolution: {integrity: sha512-K/zZlQOWMpamfLDOls5jvG7lrsjH1gkk3ESRZyZDCkVBtKHMF4LbjwCicm/iBb3mX3V/PerqRYzLbOy3/4JLCQ==}
@@ -1638,6 +1647,9 @@ packages:
   unist-util-visit@5.0.0:
     resolution: {integrity: sha512-MR04uvD+07cwl/yhVuVWAtw+3GOR/knlL55Nd/wAdblk27GCVt3lqpTivy/tkJcZoNPzTwS1Y+KMojlLDhoTzg==}
 
+  unist-util-visit@5.1.0:
+    resolution: {integrity: sha512-m+vIdyeCOpdr/QeQCu2EzxX/ohgS8KbnPDgFni4dQsfSCtpz8UqDyY5GjRru8PDKuYn7Fq19j1CQ+nJSsGKOzg==}
+
   unstorage@1.16.0:
     resolution: {integrity: sha512-WQ37/H5A7LcRPWfYOrDa1Ys02xAbpPJq6q5GkO88FBXVSQzHd7+BjEwfRqyaSWCv9MbsJy058GWjjPjcJ16GGA==}
     peerDependencies:
@@ -2506,6 +2518,12 @@ snapshots:
 
   astring@1.9.0: {}
 
+  astro-mermaid-renderer@0.1.2(astro@5.9.2(@types/node@24.0.0)(rollup@4.42.0)(typescript@5.8.3))(typescript@5.8.3):
+    dependencies:
+      astro: 5.9.2(@types/node@24.0.0)(rollup@4.42.0)(typescript@5.8.3)
+      typescript: 5.8.3
+      unist-util-visit: 5.1.0
+
   astro@5.9.2(@types/node@24.0.0)(rollup@4.42.0)(typescript@5.8.3):
     dependencies:
       '@astrojs/compiler': 2.12.2
@@ -2935,7 +2953,7 @@ snapshots:
       mdast-util-to-hast: 13.2.0
       parse5: 7.3.0
       unist-util-position: 5.0.0
-      unist-util-visit: 5.0.0
+      unist-util-visit: 5.1.0
       vfile: 6.0.3
       web-namespaces: 2.0.1
       zwitch: 2.0.4
@@ -3104,7 +3122,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
-      unist-util-visit: 5.0.0
+      unist-util-visit: 5.1.0
 
   mdast-util-find-and-replace@3.0.2:
     dependencies:
@@ -3250,7 +3268,7 @@ snapshots:
       micromark-util-sanitize-uri: 2.0.1
       trim-lines: 3.0.1
       unist-util-position: 5.0.0
-      unist-util-visit: 5.0.0
+      unist-util-visit: 5.1.0
       vfile: 6.0.3
 
   mdast-util-to-markdown@2.1.2:
@@ -3262,7 +3280,7 @@ snapshots:
       mdast-util-to-string: 4.0.0
       micromark-util-classify-character: 2.0.1
       micromark-util-decode-string: 2.0.1
-      unist-util-visit: 5.0.0
+      unist-util-visit: 5.1.0
       zwitch: 2.0.4
 
   mdast-util-to-string@4.0.0:
@@ -3782,7 +3800,7 @@ snapshots:
     dependencies:
       '@types/nlcst': 2.0.3
       nlcst-to-string: 4.0.0
-      unist-util-visit: 5.0.0
+      unist-util-visit: 5.1.0
 
   retext-stringify@4.0.0:
     dependencies:
@@ -3998,7 +4016,7 @@ snapshots:
   unist-util-remove-position@5.0.0:
     dependencies:
       '@types/unist': 3.0.3
-      unist-util-visit: 5.0.0
+      unist-util-visit: 5.1.0
 
   unist-util-stringify-position@4.0.0:
     dependencies:
@@ -4014,6 +4032,12 @@ snapshots:
       unist-util-is: 6.0.0
 
   unist-util-visit@5.0.0:
+    dependencies:
+      '@types/unist': 3.0.3
+      unist-util-is: 6.0.0
+      unist-util-visit-parents: 6.0.1
+
+  unist-util-visit@5.1.0:
     dependencies:
       '@types/unist': 3.0.3
       unist-util-is: 6.0.0
