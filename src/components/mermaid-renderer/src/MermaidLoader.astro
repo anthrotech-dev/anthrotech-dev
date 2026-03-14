@@ -1,0 +1,705 @@
+<script is:inline>
+  (() => {
+    // Mermaid本体を一度だけ読み込み、初期化済みインスタンスを返す
+    const ensureMermaidScript = async () => {
+      if (window.mermaid) return window.mermaid;
+      if (window.__anthrotechMermaidLoader)
+        return window.__anthrotechMermaidLoader;
+
+      window.__anthrotechMermaidLoader = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src =
+          "https://cdn.docbase.io/mermaid@11.6.0/dist/mermaid.min.js";
+        script.async = true;
+
+        script.onload = () => {
+          if (!window.mermaid) {
+            window.__anthrotechMermaidLoader = undefined;
+            reject(new Error("Mermaid failed to load."));
+            return;
+          }
+
+          window.mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: "strict",
+            theme: "default",
+          });
+
+          resolve(window.mermaid);
+        };
+
+        script.onerror = () => {
+          window.__anthrotechMermaidLoader = undefined;
+          reject(new Error("Failed to load Mermaid script."));
+        };
+
+        document.head.appendChild(script);
+      });
+
+      return window.__anthrotechMermaidLoader;
+    };
+
+    // ===== 共通定数 =====
+    const DEFAULT_SCALE = 1;
+    const MIN_SCALE = 0.5;
+    const MAX_SCALE = 3;
+    const BUTTON_ZOOM_STEP = 0.2;
+    const WHEEL_ZOOM_STEP = 0.12;
+
+    class MermaidPreviewModal {
+      // ===== ライフサイクル =====
+      constructor() {
+        this.root = null;
+        this.viewport = null;
+        this.canvas = null;
+        this.previewSvg = null;
+
+        this.scale = DEFAULT_SCALE;
+        this.offsetX = 0;
+        this.offsetY = 0;
+
+        this.dragState = null;
+        this.pinchState = null;
+
+        this.baseWidth = 0;
+        this.baseHeight = 0;
+      }
+
+      // ===== 初期化 =====
+      ensure() {
+        if (this.root) return;
+
+        const root = document.createElement("div");
+        root.className = "mermaid-preview";
+        root.hidden = true;
+        root.innerHTML = `
+          <div class="mermaid-preview__backdrop" data-close="1"></div>
+          <div class="mermaid-preview__dialog" role="dialog" aria-modal="true" aria-label="Mermaid preview">
+            <div class="mermaid-preview__toolbar">
+              <button type="button" data-action="zoom-out" aria-label="Zoom out">-</button>
+              <button type="button" data-action="zoom-in" aria-label="Zoom in">+</button>
+              <button type="button" data-action="actual-size">実寸</button>
+              <button type="button" data-action="reset">全体表示</button>
+              <button type="button" data-close="1" aria-label="Close preview">Close</button>
+            </div>
+            <div class="mermaid-preview__viewport">
+              <div class="mermaid-preview__canvas"></div>
+            </div>
+          </div>
+        `;
+
+        this.root = root;
+        this.viewport = root.querySelector(".mermaid-preview__viewport");
+        this.canvas = root.querySelector(".mermaid-preview__canvas");
+
+        this.bindEvents();
+        document.body.appendChild(root);
+      }
+
+      // ===== 入力イベント登録 =====
+      bindEvents() {
+        if (!(this.root instanceof HTMLElement)) return;
+
+        this.root.addEventListener("click", (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+
+          if (target.dataset.close === "1") {
+            this.close();
+            return;
+          }
+
+          if (target.dataset.action === "zoom-in")
+            this.applyScaleCentered(this.scale + BUTTON_ZOOM_STEP);
+          if (target.dataset.action === "zoom-out")
+            this.applyScaleCentered(this.scale - BUTTON_ZOOM_STEP);
+          if (target.dataset.action === "actual-size") this.showActualSize();
+          if (target.dataset.action === "reset") this.resetView();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && this.root && !this.root.hidden) {
+            this.close();
+          }
+        });
+
+        if (!(this.viewport instanceof HTMLElement)) return;
+
+        this.viewport.addEventListener("pointerdown", (event) => {
+          if (
+            this.isHidden() ||
+            event.pointerType === "touch" ||
+            event.button !== 0
+          )
+            return;
+
+          this.dragState = {
+            startX: event.clientX,
+            startY: event.clientY,
+            originX: this.offsetX,
+            originY: this.offsetY,
+          };
+          this.viewport.setPointerCapture(event.pointerId);
+        });
+
+        this.viewport.addEventListener("pointermove", (event) => {
+          if (
+            this.isHidden() ||
+            event.pointerType === "touch" ||
+            !this.dragState
+          )
+            return;
+
+          this.offsetX =
+            this.dragState.originX + (event.clientX - this.dragState.startX);
+          this.offsetY =
+            this.dragState.originY + (event.clientY - this.dragState.startY);
+          this.applyTransform();
+        });
+
+        this.viewport.addEventListener("pointerup", () => {
+          this.dragState = null;
+        });
+        this.viewport.addEventListener("pointercancel", () => {
+          this.dragState = null;
+        });
+        this.viewport.addEventListener("lostpointercapture", () => {
+          this.dragState = null;
+        });
+        this.viewport.addEventListener("pointerleave", () => {
+          this.dragState = null;
+        });
+
+        this.viewport.addEventListener(
+          "wheel",
+          (event) => {
+            if (this.isHidden()) return;
+            event.preventDefault();
+            const point = this.getViewportPoint(event.clientX, event.clientY);
+            this.applyScale(
+              this.scale +
+                (event.deltaY < 0 ? WHEEL_ZOOM_STEP : -WHEEL_ZOOM_STEP),
+              point.x,
+              point.y,
+            );
+          },
+          { passive: false },
+        );
+
+        this.viewport.addEventListener(
+          "touchstart",
+          (event) => {
+            if (this.isHidden()) return;
+
+            if (event.touches.length === 1) {
+              const touch = event.touches[0];
+              this.dragState = {
+                startX: touch.clientX,
+                startY: touch.clientY,
+                originX: this.offsetX,
+                originY: this.offsetY,
+              };
+              this.pinchState = null;
+            }
+
+            if (event.touches.length === 2) {
+              const center = this.touchCenter(event.touches);
+              const point = this.getViewportPoint(center.x, center.y);
+              this.pinchState = {
+                startDistance: this.touchDistance(event.touches),
+                startScale: this.scale,
+                centerX: point.x,
+                centerY: point.y,
+              };
+              this.dragState = null;
+              event.preventDefault();
+            }
+          },
+          { passive: false },
+        );
+
+        this.viewport.addEventListener(
+          "touchmove",
+          (event) => {
+            if (this.isHidden()) return;
+
+            if (event.touches.length === 1 && this.dragState) {
+              const touch = event.touches[0];
+              this.offsetX =
+                this.dragState.originX +
+                (touch.clientX - this.dragState.startX);
+              this.offsetY =
+                this.dragState.originY +
+                (touch.clientY - this.dragState.startY);
+              this.applyTransform();
+              event.preventDefault();
+            }
+
+            if (event.touches.length === 2 && this.pinchState) {
+              const distance = this.touchDistance(event.touches);
+              const ratio = distance / this.pinchState.startDistance;
+              const center = this.touchCenter(event.touches);
+              const point = this.getViewportPoint(center.x, center.y);
+              this.applyScale(
+                this.pinchState.startScale * ratio,
+                point.x || this.pinchState.centerX,
+                point.y || this.pinchState.centerY,
+              );
+              event.preventDefault();
+            }
+          },
+          { passive: false },
+        );
+
+        this.viewport.addEventListener("touchend", () => {
+          if (this.isHidden()) return;
+          this.dragState = null;
+          this.pinchState = null;
+        });
+
+        this.viewport.addEventListener("touchcancel", () => {
+          this.dragState = null;
+          this.pinchState = null;
+        });
+
+        this.viewport.addEventListener(
+          "gesturestart",
+          (event) => {
+            if (!this.isHidden()) event.preventDefault();
+          },
+          { passive: false },
+        );
+
+        this.viewport.addEventListener(
+          "gesturechange",
+          (event) => {
+            if (!this.isHidden()) event.preventDefault();
+          },
+          { passive: false },
+        );
+      }
+
+      // ===== 内部ヘルパー =====
+      isHidden() {
+        return !(this.root instanceof HTMLElement) || this.root.hidden;
+      }
+
+      getViewportMetrics() {
+        if (!(this.viewport instanceof HTMLElement)) {
+          return {
+            innerWidth: 0,
+            innerHeight: 0,
+            paddingLeft: 0,
+            paddingTop: 0,
+          };
+        }
+
+        const styles = window.getComputedStyle(this.viewport);
+        const paddingLeft = Number.parseFloat(styles.paddingLeft) || 0;
+        const paddingRight = Number.parseFloat(styles.paddingRight) || 0;
+        const paddingTop = Number.parseFloat(styles.paddingTop) || 0;
+        const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
+
+        return {
+          innerWidth: Math.max(
+            this.viewport.clientWidth - paddingLeft - paddingRight,
+            0,
+          ),
+          innerHeight: Math.max(
+            this.viewport.clientHeight - paddingTop - paddingBottom,
+            0,
+          ),
+          paddingLeft,
+          paddingTop,
+        };
+      }
+
+      syncSvgSize() {
+        if (!(this.previewSvg instanceof SVGElement)) return;
+        if (!this.baseWidth || !this.baseHeight) return;
+
+        const width = this.baseWidth * this.scale;
+        const height = this.baseHeight * this.scale;
+
+        this.previewSvg.setAttribute("width", String(width));
+        this.previewSvg.setAttribute("height", String(height));
+        this.previewSvg.style.width = `${width}px`;
+        this.previewSvg.style.height = `${height}px`;
+        this.previewSvg.style.maxWidth = "none";
+      }
+
+      applyTransform() {
+        if (!(this.canvas instanceof HTMLElement)) return;
+        this.canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
+        this.syncSvgSize();
+      }
+
+      centerView() {
+        if (!(this.viewport instanceof HTMLElement)) return;
+        if (!this.baseWidth || !this.baseHeight) return;
+
+        const { innerWidth, innerHeight } = this.getViewportMetrics();
+        const scaledWidth = this.baseWidth * this.scale;
+        const scaledHeight = this.baseHeight * this.scale;
+
+        this.offsetX =
+          scaledWidth <= innerWidth ? (innerWidth - scaledWidth) / 2 : 0;
+        this.offsetY =
+          scaledHeight <= innerHeight ? (innerHeight - scaledHeight) / 2 : 0;
+        this.applyTransform();
+      }
+
+      getFitScale() {
+        if (!(this.viewport instanceof HTMLElement)) return 1;
+        if (!this.baseWidth || !this.baseHeight) return 1;
+
+        const { innerWidth, innerHeight } = this.getViewportMetrics();
+        const availableWidth = Math.max(innerWidth, 1);
+        const availableHeight = Math.max(innerHeight, 1);
+
+        return Math.min(
+          1,
+          availableWidth / this.baseWidth,
+          availableHeight / this.baseHeight,
+        );
+      }
+
+      getViewportPoint(clientX, clientY) {
+        if (!(this.viewport instanceof HTMLElement)) {
+          return { x: 0, y: 0 };
+        }
+
+        const rect = this.viewport.getBoundingClientRect();
+        const { paddingLeft, paddingTop } = this.getViewportMetrics();
+        return {
+          x: clientX - rect.left - paddingLeft,
+          y: clientY - rect.top - paddingTop,
+        };
+      }
+
+      applyScale(nextScale, originX = 0, originY = 0) {
+        const clampedScale = Math.min(
+          MAX_SCALE,
+          Math.max(MIN_SCALE, nextScale),
+        );
+        const ratio = clampedScale / this.scale;
+
+        this.offsetX = originX - (originX - this.offsetX) * ratio;
+        this.offsetY = originY - (originY - this.offsetY) * ratio;
+        this.scale = clampedScale;
+
+        this.applyTransform();
+      }
+
+      applyScaleCentered(nextScale) {
+        this.scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale));
+        this.centerView();
+      }
+
+      resetView() {
+        this.scale = this.getFitScale();
+        this.dragState = null;
+        this.pinchState = null;
+        this.centerView();
+      }
+
+      showActualSize() {
+        this.scale = DEFAULT_SCALE;
+        this.dragState = null;
+        this.pinchState = null;
+        this.centerView();
+      }
+
+      touchDistance(touches) {
+        if (touches.length < 2) return 0;
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+      }
+
+      touchCenter(touches) {
+        return {
+          x: (touches[0].clientX + touches[1].clientX) / 2,
+          y: (touches[0].clientY + touches[1].clientY) / 2,
+        };
+      }
+
+      // ===== 公開API =====
+      open(sourceSvg) {
+        this.ensure();
+        if (!(this.canvas instanceof HTMLElement)) return;
+
+        this.canvas.replaceChildren(sourceSvg.cloneNode(true));
+        this.previewSvg = this.canvas.querySelector("svg");
+
+        if (this.previewSvg instanceof SVGElement) {
+          const viewBox = this.previewSvg.viewBox?.baseVal;
+          const rect = this.previewSvg.getBoundingClientRect();
+
+          this.baseWidth =
+            viewBox && viewBox.width ? viewBox.width : rect.width;
+          this.baseHeight =
+            viewBox && viewBox.height ? viewBox.height : rect.height;
+
+          if (!this.baseWidth || !this.baseHeight) {
+            this.baseWidth = rect.width || 1;
+            this.baseHeight = rect.height || 1;
+          }
+
+          this.previewSvg.style.maxWidth = "none";
+        }
+
+        if (this.root instanceof HTMLElement) {
+          this.root.hidden = false;
+        }
+
+        document.body.classList.add("mermaid-preview-open");
+        requestAnimationFrame(() => {
+          this.resetView();
+        });
+      }
+
+      close() {
+        if (this.root instanceof HTMLElement) {
+          this.root.hidden = true;
+        }
+
+        document.body.classList.remove("mermaid-preview-open");
+
+        this.scale = DEFAULT_SCALE;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.dragState = null;
+        this.pinchState = null;
+
+        if (this.canvas instanceof HTMLElement) {
+          this.canvas.style.transform = "translate(0px, 0px)";
+          this.canvas.replaceChildren();
+        }
+
+        this.previewSvg = null;
+        this.baseWidth = 0;
+        this.baseHeight = 0;
+      }
+    }
+
+    class MermaidRenderer {
+      // ===== ライフサイクル =====
+      constructor(previewModal) {
+        this.previewModal = previewModal;
+      }
+
+      // ===== 前処理 =====
+      // Markdown由来のMermaidコードブロックを描画対象（.mermaid）へ変換する
+      upgradeCodeBlocks() {
+        const blocks = document.querySelectorAll(
+          'pre[data-language="mermaid"], pre > code.language-mermaid',
+        );
+
+        for (const block of blocks) {
+          const pre =
+            block instanceof HTMLPreElement
+              ? block
+              : block.parentElement instanceof HTMLPreElement
+                ? block.parentElement
+                : null;
+
+          if (
+            !(pre instanceof HTMLElement) ||
+            pre.dataset.mermaidUpgraded === "1"
+          ) {
+            continue;
+          }
+
+          const chart = pre.textContent?.trimEnd();
+          if (!chart) continue;
+
+          const container = document.createElement("div");
+          container.className = "mermaid";
+          container.textContent = chart;
+
+          pre.dataset.mermaidUpgraded = "1";
+          pre.replaceWith(container);
+        }
+      }
+
+      // 図へプレビュー起動イベントを付与する
+      setupPreviewTriggers() {
+        const nodes = document.querySelectorAll(".mermaid");
+
+        for (const node of nodes) {
+          if (
+            !(node instanceof HTMLElement) ||
+            node.dataset.mermaidPreviewBound === "1"
+          ) {
+            continue;
+          }
+
+          node.tabIndex = 0;
+          node.setAttribute("role", "button");
+          node.setAttribute("aria-label", "Open Mermaid preview");
+
+          const openPreview = () => {
+            const svg = node.querySelector("svg");
+            if (!(svg instanceof SVGElement)) return;
+            this.previewModal.open(svg);
+          };
+
+          node.addEventListener("click", openPreview);
+          node.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openPreview();
+            }
+          });
+
+          node.dataset.mermaidPreviewBound = "1";
+        }
+      }
+
+      // ===== 公開API =====
+      async render() {
+        this.upgradeCodeBlocks();
+
+        const nodes = Array.from(document.querySelectorAll(".mermaid")).filter(
+          (node) => {
+            return (
+              node instanceof HTMLElement &&
+              node.dataset.mermaidRendered !== "1"
+            );
+          },
+        );
+
+        if (nodes.length === 0) return;
+
+        const mermaid = await ensureMermaidScript();
+        await mermaid.run({ nodes });
+
+        for (const node of nodes) {
+          if (!(node instanceof HTMLElement)) continue;
+          node.dataset.mermaidRendered = "1";
+        }
+
+        this.setupPreviewTriggers();
+      }
+    }
+
+    const start = () => {
+      const previewModal = new MermaidPreviewModal();
+      const renderer = new MermaidRenderer(previewModal);
+
+      renderer.render().catch((error) => {
+        console.error("[Mermaid] render failed", error);
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", start, { once: true });
+      return;
+    }
+
+    start();
+  })();
+</script>
+
+<style is:global>
+  .mermaid {
+    margin: 1rem 0;
+    overflow-x: auto;
+    cursor: zoom-in;
+  }
+
+  .mermaid svg {
+    display: block;
+    height: auto;
+  }
+
+  .mermaid-preview-open {
+    overflow: hidden;
+  }
+
+  .mermaid-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+
+  .mermaid-preview__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(15 23 42 / 0.82);
+  }
+
+  .mermaid-preview__dialog {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: min(96vw, 1400px);
+    height: min(92vh, 920px);
+    margin: 4vh auto;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgb(15 23 42 / 0.35);
+  }
+
+  .mermaid-preview__toolbar {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
+  }
+
+  .mermaid-preview__toolbar button {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #0f172a;
+    border-radius: 999px;
+    padding: 0.45rem 0.85rem;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .mermaid-preview__viewport {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+    touch-action: none;
+    overscroll-behavior: contain;
+    cursor: grab;
+    background: radial-gradient(
+      circle at 1px 1px,
+      rgb(148 163 184 / 0.25) 1px,
+      transparent 0
+    );
+    background-size: 18px 18px;
+  }
+
+  .mermaid-preview__viewport:active {
+    cursor: grabbing;
+  }
+
+  .mermaid-preview__canvas {
+    width: max-content;
+    transform-origin: top left;
+    will-change: transform;
+  }
+
+  .mermaid-preview__canvas svg {
+    display: block;
+    height: auto;
+    max-width: none;
+  }
+
+  @media (max-width: 640px) {
+    .mermaid-preview__dialog {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      border-radius: 0;
+    }
+  }
+</style>
