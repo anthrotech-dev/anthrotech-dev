@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_レイヤー_1" data-name="レイヤー 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1451.34 1451.34">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+
+      .cls-3 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="cls-2" x="261.7" y="261.7" width="927.94" height="927.94"/>
+    </clipPath>
+  </defs>
+  <g id="InfomationScience">
+    <g class="cls-3">
+      <polygon class="cls-1" points="880.33 261.7 880.33 880.33 571.01 880.33 571.01 1189.64 1189.64 1189.64 1189.64 261.7 880.33 261.7"/>
+      <rect class="cls-1" x="261.7" y="571.01" width="309.31" height="309.31"/>
+    </g>
+  </g>
+</svg>

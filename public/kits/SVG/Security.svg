@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_レイヤー_1" data-name="レイヤー 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1451.34 1451.34">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+
+      .cls-3 {
+        clip-path: url(#clippath-1);
+      }
+
+      .cls-4 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="cls-2" x="104.64" y="477.26" width="1242.07" height="496.83"/>
+    </clipPath>
+    <clipPath id="clippath-1">
+      <rect class="cls-2" x="104.64" y="477.26" width="1242.07" height="496.83"/>
+    </clipPath>
+  </defs>
+  <g id="Security">
+    <g class="cls-4">
+      <g class="cls-3">
+        <path class="cls-1" d="M1346.7,663.57h-753.07c-27.57-107.15-124.84-186.31-240.59-186.31-137.19,0-248.41,111.22-248.41,248.41s111.22,248.41,248.41,248.41c115.75,0,213.01-79.17,240.59-186.31h256.24v186.31h124.21v-186.31h124.21v186.31h124.21v-186.31h124.21v-124.21ZM353.05,880.93c-85.61,0-155.26-69.65-155.26-155.26s69.65-155.26,155.26-155.26,155.26,69.65,155.26,155.26-69.65,155.26-155.26,155.26"/>
+      </g>
+    </g>
+  </g>
+</svg>
