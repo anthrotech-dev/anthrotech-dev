@@ -1,0 +1,241 @@
+---
+title: Mermaid Sample
+description: DocBase記事準拠のMermaidサンプル集
+---
+
+# Mermaid Sample
+
+DocBaseの「Mermaid 記法と書き方」の主要図を、通常の ` ```mermaid ` コードブロックでそのまま描画できる形でまとめたページです。
+
+元記事: https://help.docbase.io/posts/3719897
+
+## 1. フローチャート
+
+```mermaid
+graph TD
+  A[スタート] --> B[処理開始]
+  B --> C{条件判定}
+  C -- Yes --> D[成功処理]
+  C -- No --> E[失敗処理]
+  D --> F[終了]
+  E --> F
+```
+
+## 2. シーケンス図
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Server
+  participant Database
+
+  Client->>+Server: リクエスト送信
+  Server->>+Database: データ問い合わせ
+  Database-->>-Server: 結果返却
+  Server-->>-Client: レスポンス送信
+
+  alt データあり
+    Client->>Server: データ更新要求
+    Server->>Database: 更新実行
+  else データなし
+    Client->>Server: データ作成要求
+    Server->>Database: 作成実行
+  end
+```
+
+## 3. クラス図
+
+```mermaid
+classDiagram
+  class Person {
+    +String name
+    +int age
+    +getDetails() String
+  }
+
+  class Employee {
+    +int salary
+    +String position
+    +calculateBonus() int
+  }
+
+  class Manager {
+    -List~Employee~ team
+    +addTeamMember(Employee) void
+  }
+
+  Person <|-- Employee
+  Employee <|-- Manager
+  Manager o-- Employee
+```
+
+## 4. 状態図
+
+```mermaid
+stateDiagram-v2
+  [*] --> 待機中
+  待機中 --> 実行中: 開始
+  実行中 --> 完了: 成功
+  実行中 --> エラー: 失敗
+  完了 --> [*]
+  エラー --> 待機中: リトライ
+  エラー --> [*]: 中止
+```
+
+## 5. ER図
+
+```mermaid
+erDiagram
+    USER {
+        int id PK
+        string username
+        string email
+        string password_hash
+    }
+
+    POST {
+        int id PK
+        int user_id FK
+        string title
+        string content
+        datetime created_at
+    }
+
+    COMMENT {
+        int id PK
+        int post_id FK
+        int user_id FK
+        string content
+        datetime created_at
+    }
+
+    USER ||--o{ POST : writes
+    POST ||--o{ COMMENT : has
+    USER ||--o{ COMMENT : makes
+```
+
+## 6. ガントチャート
+
+```mermaid
+gantt
+  title Project Schedule
+  dateFormat YYYY-MM-DD
+  axisFormat %m/%d
+  section Dev
+  ReqDef :a1, 2026-03-01, 10d
+  Design :after a1, 15d
+  section Test
+  Testing :2026-04-01, 10d
+```
+
+## 7. ジャーニーチャート
+
+```mermaid
+journey
+  title ユーザー旅行記
+  section ログイン
+    アカウント作成: 5: ユーザー
+    メール確認: 4: ユーザー
+    初回ログイン: 5: ユーザー
+  section 製品利用
+    製品検索: 3: ユーザー
+    製品詳細閲覧: 4: ユーザー
+    カートに追加: 5: ユーザー
+    購入手続き: 3: ユーザー
+```
+
+## 8. Gitグラフ
+
+```mermaid
+gitGraph
+  commit
+  branch develop
+  checkout develop
+  commit
+  commit
+  checkout main
+  merge develop
+  commit
+  branch feature
+  checkout feature
+  commit
+  commit
+  checkout develop
+  merge feature
+  checkout main
+  merge develop
+```
+
+## 9. パイチャート
+
+```mermaid
+pie
+  title 言語別使用割合
+  "JavaScript" : 45.2
+  "Python" : 32.5
+  "Java" : 10.3
+  "その他" : 12.0
+```
+
+## 10. 要件図
+
+```mermaid
+requirementDiagram
+  requirement auth_req {
+    id: 1
+    text: "認証機能を備える"
+    risk: high
+    verifymethod: test
+  }
+
+  element auth_system {
+    type: system
+  }
+
+  auth_system - satisfies -> auth_req
+```
+
+## 11. C4 図
+
+```mermaid
+C4Context
+  title システムコンテキスト図
+
+  Person(customer, "顧客", "システムを利用するエンドユーザー")
+  System(system, "予約システム", "顧客が予約を管理できるシステム")
+  System_Ext(payment, "決済システム", "支払い処理を行う外部システム")
+
+  Rel(customer, system, "予約の作成と管理")
+  Rel(system, payment, "支払い処理の依頼")
+  Rel(payment, system, "支払い結果の通知")
+```
+
+## 12. アーキテクチャ図
+
+```mermaid
+architecture-beta
+  group api(cloud)[API Layer]
+  group app(server)[Application Layer]
+  group data(database)[Data Layer]
+
+  service web(internet)[Web Client]
+  service gateway(cloud)[API Gateway] in api
+  service auth(server)[Auth Service] in app
+  service order(server)[Order Service] in app
+  service db(database)[Database] in data
+  service cache(disk)[Cache] in data
+
+  web:R --> L:gateway
+  gateway:B --> T:auth
+  gateway:B --> T:order
+  auth:B --> T:db
+  order:B --> T:db
+  order:R --> L:cache
+```
+
+---
+
+## よくあるエラーと対処
+
+- 図が出ない: Mermaid構文エラー（行末や記号）を確認
+- 複雑すぎる: 図を分割して読みやすくする
