@@ -1,0 +1,35 @@
+  @keyframes yappa-bg-flow {
+    0%   { background-position: 0% 50%, center, center; }
+    50%  { background-position: 100% 50%, center, center; }
+    100% { background-position: 0% 50%, center, center; }
+  }
+
+  /* Aero背景画像 */
+  body:has([data-yappa-backdrop]) {
+    background-image: url('/assets/yappa_san/aero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  html.dark-yappa body:has([data-yappa-backdrop]) {
+    background-image: url('/assets/yappa_san/aero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    filter: brightness(0.8);
+  }
+
+  /* ThemeToggle側の暗背景疑似要素は無効化 */
+  html.dark-yappa body:has([data-yappa-backdrop])::before {
+    background: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body:has([data-yappa-backdrop]),
+    html.dark-yappa body:has([data-yappa-backdrop]) {
+      animation: none;
+    }
+  }

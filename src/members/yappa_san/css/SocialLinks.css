@@ -1,0 +1,127 @@
+/* SNS Links - Bottom Right Fixed Position */
+.yappa-social-links {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 1000;
+}
+
+.yappa-social-links .social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.95), rgba(56, 142, 60, 0.92));
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0;
+  overflow: hidden;
+}
+
+.yappa-social-links .social-icon img {
+  width: 50%;
+  height: 50%;
+  object-fit: contain;
+  object-position: center;
+  filter: brightness(2) saturate(0);
+  transition: filter 0.3s ease;
+}
+
+.yappa-social-links .social-icon:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 1), rgba(56, 142, 60, 1));
+}
+
+.yappa-social-links .social-icon:hover img {
+  filter: brightness(2.2) saturate(0);
+}
+
+/* ダークモード対応 */
+html.dark-yappa .yappa-social-links .social-icon {
+  background: linear-gradient(135deg, rgba(32, 95, 50, 0.98), rgba(20, 70, 40, 0.96));
+  border-color: rgba(129, 199, 132, 0.3);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+html.dark-yappa .yappa-social-links .social-icon img {
+  filter: brightness(2) saturate(0);
+}
+
+html.dark-yappa .yappa-social-links .social-icon:hover {
+  background: linear-gradient(135deg, rgba(32, 95, 50, 1), rgba(20, 70, 40, 1));
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+html.dark-yappa .yappa-social-links .social-icon:hover img {
+  filter: brightness(2.2) saturate(0);
+}
+
+/* モバイル対応 */
+@media (max-width: 700px) {
+  .yappa-social-links {
+    bottom: 1rem;
+    right: 1rem;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .yappa-social-links .social-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .yappa-social-links .social-icon svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+/* 特定のSNSカラー（オプション） */
+.yappa-social-links .X:hover {
+  background: linear-gradient(135deg, #ffffff, #ffffff);
+  filter: invert(100%);
+}
+
+
+html.dark-yappa .yappa-social-links .X:hover {
+  background: linear-gradient(135deg, #ffffff, #ffffff);
+    filter: invert(100%);
+}
+
+.yappa-social-links .discord:hover {
+  background: linear-gradient(135deg, #A79A0D, #A79A0D);
+  filter : invert(100%);
+}
+
+html.dark-yappa .yappa-social-links .discord:hover {
+  background: linear-gradient(135deg, #A79A0D, #A79A0D);
+  filter : invert(100%);
+}
+
+.yappa-social-links .github:hover {
+  background: linear-gradient(135deg, #ffffff, #ffffff);
+  filter: invert(100%);
+}
+
+html.dark-yappa .yappa-social-links .github:hover {
+  background: linear-gradient(135deg, #ffffff, #ffffff);
+}
