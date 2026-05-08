@@ -8,8 +8,14 @@ locals {
   members = [
     for line in local.codeowners : {
       username = replace(split(" ", line)[1], "@", "")
-      role = (
+      org_role = (
         length(split(" ", line)) > 2 ? replace(split(" ", line)[2], "#", "") : "member"
+      )
+
+      team_role = (
+        length(split(" ", line)) > 2 && replace(split(" ", line)[2], "#", "") == "admin"
+        ? "maintainer"
+        : "member"
       )
     }
   ]
@@ -19,12 +25,33 @@ resource "github_membership" "members" {
   for_each = { for member in local.members : member.username => member }
 
   username = each.value.username
-  role     = each.value.role
+  role     = each.value.org_role
 
   lifecycle {
     ignore_changes = [role]
   }
 }
+
+data "github_team" "anthrotect" {
+  slug = "Anthrotect"
+}
+
+resource "github_team_membership" "anthrotect" {
+  for_each = local.member_map
+
+  team_id  = data.github_team.all_members.id
+  username = each.value.username
+  role     = each.value.team_role
+
+  lifecycle {
+    ignore_changes = [role]
+  }
+
+  depends_on = [
+    github_membership.members
+  ]
+}
+
 
 /*
 import {
