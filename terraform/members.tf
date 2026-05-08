@@ -19,10 +19,14 @@ locals {
       )
     }
   ]
+
+  member_map = {
+    for member in local.members : member.username => member
+  }
 }
 
 resource "github_membership" "members" {
-  for_each = { for member in local.members : member.username => member }
+  for_each = local.member_map
 
   username = each.value.username
   role     = each.value.org_role
