@@ -43,7 +43,7 @@ data "github_team" "anthrotect" {
 resource "github_team_membership" "anthrotect" {
   for_each = local.member_map
 
-  team_id  = data.github_team.all_members.id
+  team_id  = data.github_team.anthrotect.id
   username = each.value.username
   role     = each.value.team_role
 
