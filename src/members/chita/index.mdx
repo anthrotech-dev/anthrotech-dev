@@ -9,6 +9,7 @@ avatar: /assets/chita/avater.png
 <style>
     {`
 
+    
     h2 {
         margin: 0;
         margin-left: 12px;
@@ -18,71 +19,16 @@ avatar: /assets/chita/avater.png
         border-bottom: 1px solid #CDCDCD;
     }
 
-    h3 {
-        margin: 0;
-        margin-left: 12px;
-
-        font-size: 16px;
-
-        border-bottom: 1px solid #CDCDCD;
-    }
-
-    h4 {
-        margin: 0;
-
-        font-size: 16px;
-    }
-
     p {
         margin: 0;
 
         font-size: 16px;
     }
 
-    .step p {
-        font-size: 14px;
-    }
-
-    .step a {
-        font-size: 14px;
-    }
-
-    img {
-        display: block;
-    }
-
-    .outer_nest {
-        margin-top: 16px;
-        margin-bottom: 32px;
-
-        display: flex;
-        flex-flow: column;
-
-        gap: 16px;
-    }
-
-    .outer_nest:last-child {
-        margin-bottom: 0;
-    }
-
-    .inner_nest {
-        display: flex;
-
-        gap: 16px;
-    }
-
     .container {
-        width: 100%;
-
-        padding: 16px;
-
-        border: 1px solid #CDCDCD;
-        border-radius: 8px;
-    }
-
-    .content {
         margin-top: 24px;
-        margin-bottom: 8px;
+        margin-bottom: 32px;
+        margin-left: 16px;
 
         display: flex;
         flex-flow: column;
@@ -90,123 +36,34 @@ avatar: /assets/chita/avater.png
         gap: 16px;
     }
 
-    .step {
-        margin: 0 32px;
-    }
-
-    .media {
-        display: flex;
-        justify-content: center;
-
-        gap: 16px;
-    }
-
-    .media img {
-        width: 165px;
-        height: 165px;
-
-        object-fit: cover;
+    .container:last-child {
+        margin-bottom: 0;
     }
 
     `}
 </style>
 
 <h2>
-    取り組んでいること(260228)
+    やってること
 </h2>
-<div className="outer_nest">
-    <div className="inner_nest">
-        <div className="container">
-            <h3>
-                🐾 サーバーとかネットワークをつくったりこわしたりしています
-            </h3>
-            <div className="content">
-                <div className="step">
-                    <p>OpenWrtを最近知りました。VLANを切れたりIPoEとPPPoEを併用できて便利です。</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div className="inner_nest">
-        <div className="container">
-            <h3>
-                🐾 Pythonを勉強しています
-            </h3>
-            <div className="content">
-                <div className="step">
-                    <p>参考書 1: Python 1年生 体験してわかる！会話でまなべる！プログラミングのしくみ(翔泳社)</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container">
+    <p>🐾 サーバーとかネットワークをつくったりこわしたりしています</p>
+    <p>🐾 CとRustに興味があります</p>
 </div>
 <h2>
-    好きなこと
+    ほかにやってること
 </h2>
-<div className="outer_nest">
-    <div className="inner_nest">
-        <div className="container">
-            <h3>
-                🐾 イラストを描いています
-            </h3>
-            <div className="content">
-                <div className="media">
-                    <a href="/@chita/contents/illust01/">
-                        <img src="/assets/chita/illust01_s.png" alt="illust01" />
-                    </a>
-                    <a href="/@chita/contents/illust02/">
-                        <img src="/assets/chita/illust02_s.png" alt="illust02" />
-                    </a>
-                </div>
-                <div className="step">
-                    <p>四つ足のケモノと人間の絡みが好きです。あと女装させられてる四つ足のケモノが好きです。</p>
-                </div>
-                <div className="step">
-                    <p>けもケットで同人誌を頒布してます。頒布終了した同人誌はウェブサイトに載せてます。</p>
-                </div>
-            </div>
-        </div>
-        <div className="container">
-            <h3>
-                🐾 バンドで作曲と演奏をしています
-            </h3>
-            <div className="content">
-                <div className="media">
-                    <iframe width="347" height="195" src="https://www.youtube.com/embed/g7RBbf0kZyU?si=oe0EkHT9d7AVWpJ4"
-                        title="YouTube video player" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                </div>
-                <div className="step">
-                    <p>弾けないパートを切り貼りしたり打ち込みしたプロトタイプですがちゃんとしたバージョンを制作中です。</p>
-                </div>
-                <div className="step">
-                    <p>おもにベースを弾いてます。</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container">
+    <p>🐾 四つ足のケモノのイラストとマンガを描いています</p>
+    <p>🐾 バンドでおもにベースを弾いて曲をつくっています</p>
 </div>
 <h2>
     ぼくのこと
 </h2>
-<div className="outer_nest">
-    <div className="inner_nest">
-        <div className="container">
-            <h3>
-                🐾 チタです
-            </h3>
-            <div className="content">
-                <div className="step">
-                    <p>
-                        インフラエンジニアみならいです。がんばります。 <a href="https://x.com/kdrvk" target="_blank"
-                         rel="noopener noreferrer">X(Twitter)</a> / <a
-                        href="https://concrnt.world/con1rhg2tq9s8xc2xs4yn9negnj8l9pjxszky357vn"
-                        target="_blank" rel="noopener noreferrer">Concrnt</a> / <a
-                        href="https://chita.me" target="_blank" rel="noopener noreferrer">Website</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container">
+    <p>🐾 インフラエンジニアみならいです、がんばります <a href="https://x.com/kdrvk" target="_blank"
+            rel="noopener noreferrer">X(Twitter)</a> · <a
+            href="https://concrnt.world/con1rhg2tq9s8xc2xs4yn9negnj8l9pjxszky357vn" target="_blank"
+            rel="noopener noreferrer">Concrnt</a> · <a href="https://chita.me" target="_blank"
+            rel="noopener noreferrer">Website</a></p>
 </div>
