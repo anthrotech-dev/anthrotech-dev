@@ -1,0 +1,68 @@
+---
+title: AndroidをやめてGrapheneOSを使いはじめた話
+---
+
+<style>
+    {`
+        
+        h2 {
+            font-size: 16px;
+
+            border-bottom: 1px solid #CCCCCC;
+        }
+
+        .paragraph {
+            margin-left: 16px;
+        }
+        
+    `}
+</style>
+
+<h1>AndroidをやめてGrapheneOSを使いはじめた話</h1>
+<h2>はじめに</h2>
+<div class="paragraph">
+    <p>Google Pixelを買ったのでOSを純正AndroidからGrapheneOSに書き換えました。</p>
+</div>
+<div class="paragraph">
+    <p>GrapheneOSは純正Androidと同じAOSPをベースにプライバシーとセキュリティの強化を重視して開発されていて、UIやアプリなどは純正Androidと互換性があります。純正Androidに実装されているGoogleの機能にはプッシュ通知、位置情報、Googleアカウント認証などがあってこれらはGrapheneOSにはデフォルトで実装されていませんが、GrapheneOSのSandboxed
+        Google Playという機能を有効化することによって、純正AndroidにプリインストールされているGoogle
+        Play開発者サービスというGoogleの機能を統括する特権アプリを、サンドボックスに閉じ込め特権を剥奪した一般アプリとして実行しユーザーの明示的な許可のないGoogleによるデータアクセスを防ぎGoogleの機能を利用できます。
+    </p>
+</div>
+<h2>プライバシーモデル</h2>
+<div class="paragraph">
+    <p>GrapheneOSではGoogleによるデータアクセスを防ぐという観点で、第1段階のSandboxed Google Playを有効化しない、第2段階のSandboxed Google
+        Playを有効化する、第3段階のSandboxed Google Playを有効化してGoogleアカウントでログインする、という三段階のプライバシーモデルがあります。第1段階、Sandboxed Google
+        Playを有効化しなければプライバシーは最大限守られますが利用できるアプリやGoogleの機能が著しく制限されます。第2段階、Sandboxed Google
+        Playを有効化すればプッシュ通知などが利用できますがGoogleアカウントでログインしていないためPlay
+        Storeでアプリのインストールはできません。第3段階、GoogleアカウントでログインすればアプリやGoogleの機能が最大限利用できますがGoogleがアクセスできるデータ項目が増えます。</p>
+</div>
+<h2>実際の運用</h2>
+<div class="paragraph">
+    <p>やりたかったのは第2段階のSandboxed Google Playを有効化してGoogleアカウントでログインしない運用でしたが、結局第3段階のGoogleアカウントのログインが必要になりました。</p>
+</div>
+<div class="paragraph">
+    <p>GoogleアカウントでログインしないとPlay Storeでアプリはインストールできないので、オープンソース代替のAurora Storeを利用してアプリをインストールします。Aurora
+        StoreがプールしているGoogleアカウントを介してPlay StoreのAPIにアクセスするので匿名でアプリをダウンロードできます。</p>
+</div>
+<h2>アプリを利用するにあたっての試行錯誤</h2>
+<div class="paragraph">
+    <p>ロックが好きでライブを見に行くのですが、そのチケットはイープラスというアプリで取り扱われることが多いです。しかしAurora
+        Storeでイープラスをインストールして起動するとなぜか強制終了されてしまいます。色々試してみた結果、Shizukuというアプリでインストール元をPlay
+        Storeに偽装してGoogleアカウントでログインすると動作するようになりました。要件がGoogleアカウントでログインしていることなのか、それによってPlay
+        Integrityという端末の正当性の検証が通ったからなのかは分かりませんが、イープラスが不正なチケットの排除に厳しく取り組んでいる一環なのか信頼できない環境では動作しないみたいです。イープラスの利用はどうしても外せないのでGoogleがアクセスできるデータ項目が多い第3段階での運用になりました。
+    </p>
+</div>
+<div class="paragraph">
+    <p>またNERV防災もインストールしましたが位置情報の権限を許可してGPSをオンにしても測位されません。GrapheneOSはプライバシーとセキュリティの強化を徹底するために純正Androidではオンになっている項目がオフになっていたり、純正Androidには存在しない設定項目が追加されていたりします。あちこちいじってみた結果、Wi-Fiスキャン、Bluetoothをスキャン、Network
+        location、Geocoderをオンにすると測位されました。この中で必須なのはWi-FiスキャンとNetwork
+        locationだと思います。屋内にいたのでWi-Fiスキャンをオンにしないと測位できなかったのかも知れません。</p>
+</div>
+<h2>おわりに</h2>
+<div class="paragraph">
+    <p>GrapheneOSを使いはじめていくつかつまずきましたが今では純正Androidと同じように使用できています。プライバシーモデルの第3段階でも純正Androidと比べるとGoogleがアクセスできるデータ項目は大幅に制限されているので、プライバシーを強く意識する方には選択肢としておすすめしたいです。欠点としてはAOSPまたは純正Androidから追加された項目は翻訳が進んでいないのと、少し技術の心得が必要なことです。あと一部のセキュリティ要件が厳しいアプリは純正OSでないため端末の正当性を満たしてないと判断されて動作しないことがあるようです。
+    </p>
+</div>
+<div class="paragraph">
+    <p>みなさまもよいGrapheneOSライフを。</p>
+</div>
