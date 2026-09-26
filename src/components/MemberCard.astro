@@ -3,7 +3,7 @@ const { name, avatar, description, href } = Astro.props;
 ---
 
 <a class="member-card" href={href}>
-    {avatar && <img src={avatar} alt={`${name}'s avatar`} class="avatar" />}
+    <img src={avatar} alt={`${name}'s avatar`} class="avatar" />
     <div class="body">
         <h2 class="name">{name}</h2>
         <p class="description">{description}</p>
